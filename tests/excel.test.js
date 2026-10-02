@@ -60,11 +60,12 @@ async function testExcel() {
   const testImportPath = path.join(__dirname, 'input_import_test.xlsx');
   await importWb.xlsx.writeFile(testImportPath);
 
-  const importResult = await importCompanyExcel(testImportPath, 'Đoàn Test Import 2026');
+  const uniqueDotKham = 'Đoàn Test Import ' + Date.now();
+  const importResult = await importCompanyExcel(testImportPath, uniqueDotKham);
   console.log('Kết quả import:', importResult);
   assert.strictEqual(importResult.imported, 2, 'Phải nạp đúng 2 nhân viên.');
 
-  const importedPatients = await all("SELECT * FROM patients WHERE dot_kham = 'Đoàn Test Import 2026'");
+  const importedPatients = await all('SELECT * FROM patients WHERE dot_kham = ?', [uniqueDotKham]);
   assert.strictEqual(importedPatients.length, 2);
   assert.strictEqual(importedPatients[0].ho_ten, 'Hoàng Văn Import 1');
   assert.strictEqual(importedPatients[0].gioi_tinh, 1);
