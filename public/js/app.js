@@ -25,9 +25,15 @@ async function initApp() {
 
   // Khởi tạo SSE
   window.SSE.initSSE((event) => {
-    if (event.type === 'PATIENT_ADDED' || event.type === 'EXAM_UPDATED' || event.type === 'PATIENTS_BATCH_IMPORTED') {
+    if (
+      event.type === 'PATIENT_ADDED' ||
+      event.type === 'PATIENT_UPDATED' ||
+      event.type === 'EXAM_UPDATED' ||
+      event.type === 'PATIENTS_BATCH_IMPORTED'
+    ) {
       loadPatientList(false);
-      if (selectedPatientId && event.data && (event.data.patientId === selectedPatientId || event.data.id === selectedPatientId)) {
+      const incomingId = event.data?.patientId ?? event.data?.id;
+      if (selectedPatientId && incomingId && String(incomingId) === String(selectedPatientId)) {
         loadPatientDetail(selectedPatientId);
       }
     }
@@ -277,10 +283,16 @@ function setupEventListeners() {
 
   if (btnSwitchRoom && modalRoom) {
     btnSwitchRoom.onclick = () => {
-      window.RoomManager.renderRoomGrid('room-selection-grid', (roomId) => {
+      window.RoomManager.renderRoomGrid('room-selection-grid', async (roomId) => {
         modalRoom.classList.add('hidden');
-        loadPatientList(true);
-        renderWorkspaceContent();
+        await loadPatientList(false);
+        if (selectedPatientId) {
+          await loadPatientDetail(selectedPatientId);
+        } else if (currentPatientList.length > 0) {
+          await selectPatient(currentPatientList[0].id);
+        } else {
+          renderWorkspaceContent();
+        }
       });
       modalRoom.classList.remove('hidden');
     };
@@ -312,12 +324,20 @@ function setupEventListeners() {
   }
 }
 
+// Làm mới thông tin bệnh nhân đang chọn
+async function refreshCurrentPatient() {
+  if (selectedPatientId) {
+    await loadPatientDetail(selectedPatientId);
+  }
+}
+
 window.App = {
   initApp,
   loadPatientList,
   selectPatient,
   selectNextPatient,
-  clearSelectedPatient
+  clearSelectedPatient,
+  refreshCurrentPatient
 };
 
 document.addEventListener('DOMContentLoaded', () => {

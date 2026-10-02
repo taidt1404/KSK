@@ -20,21 +20,53 @@ function renderConclusionView(container, patientData) {
 
   // Đánh giá tình trạng hoàn thành các phòng
   const checks = [
-    { name: 'Thể Lực', done: !!theLuc.can_nang, val: theLuc.can_nang ? `${theLuc.can_nang}kg / ${theLuc.chieu_cao}cm (PL ${theLuc.phan_loai_the_luc})` : 'Chưa đo' },
-    { name: 'Khám Nội', done: !!lamSang.noi_bac_sy, val: lamSang.noi_bac_sy ? `BS: ${lamSang.noi_bac_sy}` : 'Chưa khám' },
-    { name: 'Khám Ngoại', done: !!lamSang.ngoai_phan_loai, val: lamSang.ngoai_phan_loai ? `PL ${lamSang.ngoai_phan_loai}` : 'Chưa khám' },
-    { name: 'Khám Mắt', done: !!lamSang.mat_phan_loai, val: lamSang.mat_phan_loai ? `PL ${lamSang.mat_phan_loai} (${lamSang.mat_khong_kinh_phai || 10}/10)` : 'Chưa khám' },
-    { name: 'Khám TMH', done: !!lamSang.tmh_phan_loai, val: lamSang.tmh_phan_loai ? `PL ${lamSang.tmh_phan_loai}` : 'Chưa khám' },
-    { name: 'Khám RHM', done: !!lamSang.rhm_phan_loai, val: lamSang.rhm_phan_loai ? `PL ${lamSang.rhm_phan_loai}` : 'Chưa khám' },
-    { name: 'Khám Da Liễu', done: !!lamSang.da_lieu_phan_loai, val: lamSang.da_lieu_phan_loai ? `PL ${lamSang.da_lieu_phan_loai}` : 'Chưa khám' },
-    { name: 'Cận Lâm Sàng', done: !!cls.cls_hong_cau || !!cls.cls_xquang, val: (cls.cls_hong_cau || cls.cls_xquang) ? 'Đã có KQ' : 'Chưa có' }
+    {
+      name: 'Thể Lực',
+      done: !!(theLuc.can_nang || theLuc.chieu_cao || theLuc.ha_tam_thu),
+      val: theLuc.can_nang ? `${theLuc.can_nang}kg / ${theLuc.chieu_cao}cm (PL ${theLuc.phan_loai_the_luc || 1})` : 'Chưa đo'
+    },
+    {
+      name: 'Khám Nội',
+      done: !!(lamSang.noi_bac_sy || lamSang.noi_pl_tuan_hoan || lamSang.noi_tuan_hoan || lamSang.noi_ngay_kham),
+      val: (lamSang.noi_bac_sy || lamSang.noi_pl_tuan_hoan || lamSang.noi_tuan_hoan) ? `BS: ${lamSang.noi_bac_sy || 'Đã khám'}` : 'Chưa khám'
+    },
+    {
+      name: 'Khám Ngoại',
+      done: !!(lamSang.ngoai_phan_loai || lamSang.ngoai_ket_qua || lamSang.ngoai_bac_sy),
+      val: lamSang.ngoai_phan_loai ? `PL ${lamSang.ngoai_phan_loai}` : (lamSang.ngoai_ket_qua ? 'Đã khám' : 'Chưa khám')
+    },
+    {
+      name: 'Khám Mắt',
+      done: !!(lamSang.mat_phan_loai || lamSang.mat_khong_kinh_phai || lamSang.mat_benh || lamSang.mat_bac_sy),
+      val: lamSang.mat_phan_loai ? `PL ${lamSang.mat_phan_loai} (${lamSang.mat_khong_kinh_phai || 10}/10)` : (lamSang.mat_khong_kinh_phai ? `${lamSang.mat_khong_kinh_phai}/10` : 'Chưa khám')
+    },
+    {
+      name: 'Khám TMH',
+      done: !!(lamSang.tmh_phan_loai || lamSang.tmh_benh || lamSang.tmh_tai_trai_thuong || lamSang.tmh_bac_sy),
+      val: lamSang.tmh_phan_loai ? `PL ${lamSang.tmh_phan_loai}` : (lamSang.tmh_benh ? 'Đã khám' : 'Chưa khám')
+    },
+    {
+      name: 'Khám RHM',
+      done: !!(lamSang.rhm_phan_loai || lamSang.rhm_benh || lamSang.rhm_ham_tren || lamSang.rhm_bac_sy),
+      val: lamSang.rhm_phan_loai ? `PL ${lamSang.rhm_phan_loai}` : (lamSang.rhm_benh ? 'Đã khám' : 'Chưa khám')
+    },
+    {
+      name: 'Khám Da Liễu',
+      done: !!(lamSang.da_lieu_phan_loai || lamSang.da_lieu_ket_qua || lamSang.da_lieu_bac_sy),
+      val: lamSang.da_lieu_phan_loai ? `PL ${lamSang.da_lieu_phan_loai}` : (lamSang.da_lieu_ket_qua ? 'Đã khám' : 'Chưa khám')
+    },
+    {
+      name: 'Cận Lâm Sàng',
+      done: !!(cls.cls_hong_cau || cls.cls_duong_huyet || cls.cls_xquang || cls.cls_sieu_am || cls.cls_dien_tim || cls.cls_bac_sy || cls.cls_ast),
+      val: (cls.cls_hong_cau || cls.cls_xquang || cls.cls_duong_huyet || cls.cls_dien_tim || cls.cls_bac_sy) ? 'Đã có KQ' : 'Chưa có'
+    }
   ];
 
   if (p.gioi_tinh === 2) {
     checks.push({
       name: 'Sản Phụ Khoa',
-      done: !!lamSang.san_phu_khoa_phan_loai,
-      val: lamSang.san_phu_khoa_phan_loai ? `PL ${lamSang.san_phu_khoa_phan_loai}` : 'Chưa khám'
+      done: !!(lamSang.san_phu_khoa_phan_loai || lamSang.san_phu_khoa_ket_qua || lamSang.san_phu_khoa_bac_sy),
+      val: lamSang.san_phu_khoa_phan_loai ? `PL ${lamSang.san_phu_khoa_phan_loai}` : (lamSang.san_phu_khoa_ket_qua ? 'Đã khám' : 'Chưa khám')
     });
   }
 
@@ -45,9 +77,14 @@ function renderConclusionView(container, patientData) {
     <div class="card">
       <div class="card-title">
         <span>📊 Tiến Độ & Kết Quả Các Chuyên Khoa Đã Khám</span>
-        <span style="font-size: 13px; font-weight: normal; color: var(--text-muted);">
-          ${checks.length - missingRooms.length}/${checks.length} chuyên khoa đã hoàn thành
-        </span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 13px; font-weight: normal; color: var(--text-muted);">
+            ${checks.length - missingRooms.length}/${checks.length} chuyên khoa đã hoàn thành
+          </span>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-conclusion-progress">
+            🔄 Đồng Bộ Dữ Liệu
+          </button>
+        </div>
       </div>
 
       <div class="progress-grid">
@@ -128,6 +165,19 @@ function renderConclusionView(container, patientData) {
     </div>
   `;
 
+  // Gắn sự kiện làm mới tiến độ
+  const btnRefreshProg = document.getElementById('btn-refresh-conclusion-progress');
+  if (btnRefreshProg) {
+    btnRefreshProg.onclick = async () => {
+      btnRefreshProg.innerText = 'Đang đồng bộ...';
+      btnRefreshProg.disabled = true;
+      if (window.App && window.App.refreshCurrentPatient) {
+        await window.App.refreshCurrentPatient();
+      }
+      window.showToast('Đã đồng bộ kết quả mới nhất từ các phòng khám', 'success');
+    };
+  }
+
   // Gắn sự kiện lưu kết luận
   const form = document.getElementById('form-conclusion');
   form.addEventListener('submit', async (e) => {
@@ -153,6 +203,9 @@ function renderConclusionView(container, patientData) {
       const data = await res.json();
       if (data.success) {
         window.showToast('Đã lưu kết luận KSK thành công!', 'success');
+        if (window.App && window.App.refreshCurrentPatient) {
+          await window.App.refreshCurrentPatient();
+        }
         if (window.App && window.App.selectNextPatient) {
           window.App.selectNextPatient();
         }

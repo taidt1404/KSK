@@ -958,6 +958,9 @@ function renderClinicExamView(container, patientData, currentRoomId) {
       const data = await res.json();
       if (data.success) {
         window.showToast('Đã lưu kết quả thành công!', 'success');
+        if (window.App && window.App.refreshCurrentPatient) {
+          await window.App.refreshCurrentPatient();
+        }
         if (window.App && window.App.selectNextPatient) {
           window.App.selectNextPatient();
         }
