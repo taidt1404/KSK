@@ -1,0 +1,8 @@
+node_modules/
+package-lock.json
+data/*.db
+data/*.db-wal
+data/*.db-shm
+uploads/
+tests/output_test.xlsx
+tests/input_import_test.xlsx

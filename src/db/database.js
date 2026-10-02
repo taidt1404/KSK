@@ -67,11 +67,25 @@ function exec(sql) {
   });
 }
 
+function closeDb() {
+  return new Promise((resolve) => {
+    if (dbInstance) {
+      dbInstance.close(() => {
+        dbInstance = null;
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
 module.exports = {
   getDb,
   run,
   get,
   all,
   exec,
+  closeDb,
   DB_PATH
 };
