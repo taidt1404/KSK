@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Nhập Liệu Khám Sức Khỏe Định Kỳ (LAN KSK)</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- TOP NAVBAR -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="brand-logo">🏥</div>
+      <div>
+        <div class="brand-title">
+          <span>KSK-LAN</span>
+          <span class="brand-badge">Trực Tuyến</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div id="current-room-badge" class="current-room-tag">
+        <span>🏢</span> <span>Tiếp Đón & Hành Chính</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-switch-room">
+        🔄 Đổi Phòng Khám
+      </button>
+    </div>
+
+    <div class="nav-actions">
+      <div class="form-group" style="margin: 0; min-width: 180px;">
+        <select id="select-dot-kham" class="form-control" style="padding: 5px 10px; font-size: 13px;">
+          <option value="">-- Tất cả đợt khám --</option>
+        </select>
+      </div>
+
+      <button class="btn btn-success btn-sm" id="btn-export-excel" title="Xuất toàn bộ kết quả ra file Excel 108 cột">
+        📊 Xuất Excel 108 Cột
+      </button>
+
+      <div class="connection-status">
+        <span id="sse-status-dot" class="status-dot"></span>
+        <span id="sse-status-text">Đang kết nối...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- APP CONTAINER -->
+  <main class="app-container">
+    <!-- SIDEBAR: PATIENT QUEUE -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-patient-input" class="search-input" placeholder="Tìm theo CCCD, Tên hoặc STT...">
+        </div>
+        <div class="filter-tabs">
+          <button class="tab-btn active" data-filter="waiting">Chờ Khám</button>
+          <button class="tab-btn" data-filter="done">Đã Khám</button>
+          <button class="tab-btn" data-filter="all">Tất Cả</button>
+        </div>
+      </div>
+
+      <div id="patient-list-container" class="patient-list">
+        <!-- Rendered by app.js -->
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <section class="main-workspace">
+      <!-- PATIENT HEADER BANNER -->
+      <div class="workspace-header">
+        <div class="patient-banner">
+          <div class="banner-avatar">👤</div>
+          <div class="banner-details">
+            <h2 id="banner-patient-name">Vui lòng chọn bệnh nhân</h2>
+            <div id="banner-patient-meta" class="banner-meta"></div>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-secondary btn-sm" id="btn-new-patient-nav">
+            ➕ Tiếp Đón Bệnh Nhân Mới
+          </button>
+        </div>
+      </div>
+
+      <!-- WORKSPACE BODY (DYNAMIC MODULE) -->
+      <div id="workspace-content" class="workspace-body">
+        <!-- Rendered by modules -->
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: ĐỔI PHÒNG KHÁM -->
+  <div id="modal-switch-room" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🏢 Chọn Phòng Khám / Bàn Khám Làm Việc</h3>
+        <button class="modal-close" id="btn-close-room-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 13.5px; margin-bottom: 16px;">
+          Máy tính này sẽ được chuyển sang giao diện chuyên biệt của phòng khám được chọn. Hệ thống tự động ghi nhớ cài đặt này cho các lần truy cập sau.
+        </p>
+        <div id="room-selection-grid" class="room-grid">
+          <!-- Rendered by RoomManager -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
+
+  <!-- SCRIPTS -->
+  <script src="js/roomManager.js"></script>
+  <script src="js/sse.js"></script>
+  <script src="js/modules/reception.js"></script>
+  <script src="js/modules/clinicExam.js"></script>
+  <script src="js/modules/conclusion.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
