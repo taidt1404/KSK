@@ -66,15 +66,18 @@ function renderReceptionView(container) {
         <div class="form-grid-3" style="margin-top: 14px;">
           <div class="form-group">
             <label>Tỉnh/Thành phố nơi ở</label>
-            <input type="text" id="rec-tinh_tp" class="form-control" placeholder="Ví dụ: TP. Hồ Chí Minh">
+            <input type="text" id="rec-tinh_tp" class="form-control" list="list-tinh_tp" placeholder="Chọn hoặc gõ Tỉnh/TP...">
+            <datalist id="list-tinh_tp"></datalist>
           </div>
           <div class="form-group">
             <label>Xã/Phường nơi ở</label>
-            <input type="text" id="rec-xa_phuong" class="form-control" placeholder="Ví dụ: Phường Bến Nghé">
+            <input type="text" id="rec-xa_phuong" class="form-control" list="list-xa_phuong" placeholder="Chọn hoặc gõ Xã/Phường...">
+            <datalist id="list-xa_phuong"></datalist>
           </div>
           <div class="form-group">
             <label>Nghề nghiệp</label>
-            <input type="text" id="rec-nghe_nghiep" class="form-control" placeholder="Ví dụ: Công nhân, Kế toán...">
+            <input type="text" id="rec-nghe_nghiep" class="form-control" list="list-nghe_nghiep" placeholder="Chọn hoặc gõ nghề nghiệp...">
+            <datalist id="list-nghe_nghiep"></datalist>
           </div>
         </div>
 
@@ -218,6 +221,67 @@ function renderReceptionView(container) {
       btnSubmit.innerText = 'Bắt Đầu Nạp Dữ Liệu';
     }
   };
+
+  // Nạp danh mục Tỉnh/Thành phố, Xã/Phường, Nghề nghiệp từ API
+  loadAddressLookups();
+}
+
+async function loadAddressLookups() {
+  const listTinh = document.getElementById('list-tinh_tp');
+  const listXa = document.getElementById('list-xa_phuong');
+  const listNghe = document.getElementById('list-nghe_nghiep');
+  const inputTinh = document.getElementById('rec-tinh_tp');
+
+  // 1. Tải 63 Tỉnh/Thành phố
+  try {
+    const res = await fetch('/api/lookups/provinces');
+    const data = await res.json();
+    if (data.success && listTinh) {
+      listTinh.innerHTML = data.data.map((t) => `<option value="${t}">`).join('');
+    }
+  } catch (err) {
+    console.error('Lỗi tải danh mục Tỉnh/TP:', err);
+  }
+
+  // 2. Tải danh mục Nghề nghiệp
+  try {
+    const res = await fetch('/api/lookups/jobs');
+    const data = await res.json();
+    if (data.success && listNghe) {
+      listNghe.innerHTML = data.data.map((j) => `<option value="${j.name}">`).join('');
+    }
+  } catch (err) {
+    console.error('Lỗi tải danh mục Nghề nghiệp:', err);
+  }
+
+  // 3. Hàm tải Xã/Phường theo Tỉnh
+  async function updateWards(tinhName) {
+    if (!listXa) return;
+    try {
+      let url = '/api/lookups/wards';
+      if (tinhName && tinhName.trim()) {
+        url += `?province=${encodeURIComponent(tinhName.trim())}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        listXa.innerHTML = data.data.map((x) => `<option value="${x}">`).join('');
+      }
+    } catch (err) {
+      console.error('Lỗi tải danh mục Xã/Phường:', err);
+    }
+  }
+
+  if (inputTinh) {
+    inputTinh.addEventListener('change', (e) => {
+      updateWards(e.target.value);
+    });
+    inputTinh.addEventListener('blur', (e) => {
+      updateWards(e.target.value);
+    });
+    // Nạp sẵn xã phường nếu đã có tỉnh
+    updateWards(inputTinh.value || 'Thành phố Cần Thơ');
+  }
 }
 
 window.ReceptionModule = {
