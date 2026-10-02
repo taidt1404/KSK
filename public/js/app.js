@@ -210,12 +210,21 @@ function renderWorkspaceContent() {
   const currentRoom = window.RoomManager.getCurrentRoom();
 
   if (currentRoom === 'tiep_don') {
-    window.ReceptionModule.renderReceptionView(container);
+    window.ReceptionModule.renderReceptionView(container, selectedPatientData);
   } else if (currentRoom === 'ket_luan') {
     window.ConclusionModule.renderConclusionView(container, selectedPatientData);
   } else {
     window.ClinicExamModule.renderClinicExamView(container, selectedPatientData, currentRoom);
   }
+}
+
+// Xóa lựa chọn bệnh nhân (chuyển sang tạo mới tại Tiếp đón)
+function clearSelectedPatient() {
+  selectedPatientId = null;
+  selectedPatientData = null;
+  updatePatientBanner(null);
+  renderPatientList();
+  renderWorkspaceContent();
 }
 
 // Tự động chuyển ca tiếp theo sau khi lưu
@@ -298,7 +307,7 @@ function setupEventListeners() {
   if (btnNewPatient) {
     btnNewPatient.onclick = () => {
       window.RoomManager.setCurrentRoom('tiep_don');
-      renderWorkspaceContent();
+      clearSelectedPatient();
     };
   }
 }
@@ -307,7 +316,8 @@ window.App = {
   initApp,
   loadPatientList,
   selectPatient,
-  selectNextPatient
+  selectNextPatient,
+  clearSelectedPatient
 };
 
 document.addEventListener('DOMContentLoaded', () => {

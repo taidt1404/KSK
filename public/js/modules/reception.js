@@ -1,28 +1,38 @@
-function renderReceptionView(container) {
+function renderReceptionView(container, patientData) {
+  const isEditing = !!(patientData && patientData.patient);
+  const p = isEditing ? patientData.patient : {};
+
   container.innerHTML = `
     <div class="card">
       <div class="card-title">
-        <span>🏢 Tiếp Đón & Đăng Ký Hồ Sơ Khám Sức Khỏe Mới</span>
-        <button class="btn btn-secondary btn-sm" id="btn-open-import-modal">
-          📥 Nạp Danh Sách Đoàn KSK từ Excel
-        </button>
+        <span>${isEditing ? `📝 Chỉnh Sửa Thông Tin Hành Chính: <strong>${p.ho_ten}</strong> (Mã: #${p.stt || p.id})` : '🏢 Tiếp Đón & Đăng Ký Hồ Sơ Khám Sức Khỏe Mới'}</span>
+        <div style="display: flex; gap: 8px;">
+          ${isEditing ? `
+            <button class="btn btn-secondary btn-sm" id="btn-switch-create-new">
+              ➕ Đăng Ký Người Mới
+            </button>
+          ` : ''}
+          <button class="btn btn-secondary btn-sm" id="btn-open-import-modal">
+            📥 Nạp Danh Sách Đoàn KSK từ Excel
+          </button>
+        </div>
       </div>
 
       <form id="form-reception">
         <div class="form-grid-3">
           <div class="form-group">
             <label>Họ và tên <span class="req">*</span></label>
-            <input type="text" id="rec-ho_ten" class="form-control" placeholder="Nhập đầy đủ họ và tên" required autofocus>
+            <input type="text" id="rec-ho_ten" class="form-control" value="${p.ho_ten || ''}" placeholder="Nhập đầy đủ họ và tên" required autofocus>
           </div>
           <div class="form-group">
             <label>Ngày sinh (DD/MM/YYYY) <span class="req">*</span></label>
-            <input type="text" id="rec-ngay_sinh" class="form-control" placeholder="Ví dụ: 15/05/1990" required>
+            <input type="text" id="rec-ngay_sinh" class="form-control" value="${p.ngay_sinh || ''}" placeholder="Ví dụ: 15/05/1990" required>
           </div>
           <div class="form-group">
             <label>Giới tính <span class="req">*</span></label>
             <select id="rec-gioi_tinh" class="form-control" required>
-              <option value="1">1 - Nam</option>
-              <option value="2">2 - Nữ</option>
+              <option value="1" ${p.gioi_tinh === 1 ? 'selected' : ''}>1 - Nam</option>
+              <option value="2" ${p.gioi_tinh === 2 ? 'selected' : ''}>2 - Nữ</option>
             </select>
           </div>
         </div>
@@ -30,35 +40,35 @@ function renderReceptionView(container) {
         <div class="form-grid-3" style="margin-top: 14px;">
           <div class="form-group">
             <label>Số CCCD / Định danh</label>
-            <input type="text" id="rec-cccd" class="form-control" placeholder="12 chữ số CCCD">
+            <input type="text" id="rec-cccd" class="form-control" value="${p.cccd || ''}" placeholder="12 chữ số CCCD">
           </div>
           <div class="form-group">
             <label>Ngày cấp CCCD</label>
-            <input type="text" id="rec-ngay_cap_cccd" class="form-control" placeholder="DD/MM/YYYY">
+            <input type="text" id="rec-ngay_cap_cccd" class="form-control" value="${p.ngay_cap_cccd || ''}" placeholder="DD/MM/YYYY">
           </div>
           <div class="form-group">
             <label>Nơi cấp CCCD</label>
-            <input type="text" id="rec-noi_cap_cccd" class="form-control" placeholder="Cục CS QLHC về TTXH">
+            <input type="text" id="rec-noi_cap_cccd" class="form-control" value="${p.noi_cap_cccd || ''}" placeholder="Cục CS QLHC về TTXH">
           </div>
         </div>
 
         <div class="form-grid-3" style="margin-top: 14px;">
           <div class="form-group">
             <label>Số điện thoại</label>
-            <input type="text" id="rec-sdt" class="form-control" placeholder="Số điện thoại liên lạc">
+            <input type="text" id="rec-sdt" class="form-control" value="${p.sdt || ''}" placeholder="Số điện thoại liên lạc">
           </div>
           <div class="form-group">
             <label>Mã số thẻ BHYT</label>
-            <input type="text" id="rec-so_the_bhyt" class="form-control" placeholder="15 ký tự thẻ BHYT">
+            <input type="text" id="rec-so_the_bhyt" class="form-control" value="${p.so_the_bhyt || ''}" placeholder="15 ký tự thẻ BHYT">
           </div>
           <div class="form-group">
             <label>Đối tượng KSK</label>
             <select id="rec-doi_tuong_ksk" class="form-control">
-              <option value="64">64 - KSK định kỳ cho người lao động</option>
-              <option value="58">58 - KSK cho đối tượng chính sách</option>
-              <option value="59">59 - KSK an toàn thực phẩm</option>
-              <option value="60">60 - KSK khi đi làm việc ở nước ngoài</option>
-              <option value="61">61 - Khám giám định y khoa</option>
+              <option value="64" ${p.doi_tuong_ksk === '64' ? 'selected' : ''}>64 - KSK định kỳ cho người lao động</option>
+              <option value="58" ${p.doi_tuong_ksk === '58' ? 'selected' : ''}>58 - KSK cho đối tượng chính sách</option>
+              <option value="59" ${p.doi_tuong_ksk === '59' ? 'selected' : ''}>59 - KSK an toàn thực phẩm</option>
+              <option value="60" ${p.doi_tuong_ksk === '60' ? 'selected' : ''}>60 - KSK khi đi làm việc ở nước ngoài</option>
+              <option value="61" ${p.doi_tuong_ksk === '61' ? 'selected' : ''}>61 - Khám giám định y khoa</option>
             </select>
           </div>
         </div>
@@ -66,37 +76,48 @@ function renderReceptionView(container) {
         <div class="form-grid-3" style="margin-top: 14px;">
           <div class="form-group">
             <label>Tỉnh/Thành phố nơi ở</label>
-            <input type="text" id="rec-tinh_tp" class="form-control" list="list-tinh_tp" placeholder="Chọn hoặc gõ Tỉnh/TP...">
+            <input type="text" id="rec-tinh_tp" class="form-control" list="list-tinh_tp" value="${p.tinh_tp || ''}" placeholder="Chọn hoặc gõ Tỉnh/TP...">
             <datalist id="list-tinh_tp"></datalist>
           </div>
           <div class="form-group">
             <label>Xã/Phường nơi ở</label>
-            <input type="text" id="rec-xa_phuong" class="form-control" list="list-xa_phuong" placeholder="Chọn hoặc gõ Xã/Phường...">
+            <input type="text" id="rec-xa_phuong" class="form-control" list="list-xa_phuong" value="${p.xa_phuong || ''}" placeholder="Chọn hoặc gõ Xã/Phường...">
             <datalist id="list-xa_phuong"></datalist>
           </div>
           <div class="form-group">
             <label>Nghề nghiệp</label>
-            <input type="text" id="rec-nghe_nghiep" class="form-control" list="list-nghe_nghiep" placeholder="Chọn hoặc gõ nghề nghiệp...">
+            <input type="text" id="rec-nghe_nghiep" class="form-control" list="list-nghe_nghiep" value="${p.nghe_nghiep || ''}" placeholder="Chọn hoặc gõ nghề nghiệp...">
             <datalist id="list-nghe_nghiep"></datalist>
           </div>
         </div>
 
-        <div class="form-grid-2" style="margin-top: 14px;">
+        <div class="form-grid-3" style="margin-top: 14px;">
           <div class="form-group">
             <label>Nơi làm việc, công tác</label>
-            <input type="text" id="rec-noi_cong_tac" class="form-control" placeholder="Tên công ty hoặc trường học">
+            <input type="text" id="rec-noi_cong_tac" class="form-control" value="${p.noi_cong_tac || ''}" placeholder="Tên công ty hoặc trường học">
           </div>
           <div class="form-group">
             <label>Đợt khám / Tên đoàn KSK</label>
-            <input type="text" id="rec-dot_kham" class="form-control" placeholder="Ví dụ: Đoàn KSK Công ty May 10">
+            <input type="text" id="rec-dot_kham" class="form-control" value="${p.dot_kham || ''}" placeholder="Ví dụ: Đoàn KSK Công ty May 10">
+          </div>
+          <div class="form-group">
+            <label>Số thứ tự (STT)</label>
+            <input type="number" id="rec-stt" class="form-control" value="${p.stt || ''}" placeholder="Để trống hệ thống tự tăng">
           </div>
         </div>
 
         <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">
-          <button type="reset" class="btn btn-secondary">Làm Lại</button>
-          <button type="submit" class="btn btn-primary" id="btn-save-patient">
-            💾 Đăng Ký & Tạo Hồ Sơ Tiếp Đón (Enter)
-          </button>
+          ${isEditing ? `
+            <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Hủy Chỉnh Sửa</button>
+            <button type="submit" class="btn btn-success" id="btn-save-patient">
+              💾 Cập Nhật Thông Tin Bệnh Nhân (Enter)
+            </button>
+          ` : `
+            <button type="reset" class="btn btn-secondary">Làm Lại</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-patient">
+              💾 Đăng Ký & Tạo Hồ Sơ Tiếp Đón (Enter)
+            </button>
+          `}
         </div>
       </form>
     </div>
@@ -129,7 +150,26 @@ function renderReceptionView(container) {
     </div>
   `;
 
-  // Gắn sự kiện submit form
+  // Nút chuyển sang tạo người mới
+  const btnCreateNew = document.getElementById('btn-switch-create-new');
+  if (btnCreateNew) {
+    btnCreateNew.onclick = () => {
+      if (window.App && window.App.clearSelectedPatient) {
+        window.App.clearSelectedPatient();
+      }
+    };
+  }
+
+  const btnCancelEdit = document.getElementById('btn-cancel-edit');
+  if (btnCancelEdit) {
+    btnCancelEdit.onclick = () => {
+      if (window.App && window.App.clearSelectedPatient) {
+        window.App.clearSelectedPatient();
+      }
+    };
+  }
+
+  // Gắn sự kiện submit form (Thêm mới HOẶC Cập nhật)
   const form = document.getElementById('form-reception');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -147,21 +187,31 @@ function renderReceptionView(container) {
       xa_phuong: document.getElementById('rec-xa_phuong').value,
       nghe_nghiep: document.getElementById('rec-nghe_nghiep').value,
       noi_cong_tac: document.getElementById('rec-noi_cong_tac').value,
-      dot_kham: document.getElementById('rec-dot_kham').value || 'Đoàn KSK ' + new Date().toLocaleDateString('vi-VN')
+      dot_kham: document.getElementById('rec-dot_kham').value || 'Đoàn KSK ' + new Date().toLocaleDateString('vi-VN'),
+      stt: document.getElementById('rec-stt').value || null
     };
 
     try {
-      const res = await fetch('/api/patients', {
-        method: 'POST',
+      const url = isEditing ? `/api/patients/${p.id}` : '/api/patients';
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data.success) {
-        window.showToast('Đã tiếp nhận bệnh nhân: ' + payload.ho_ten, 'success');
-        form.reset();
-        document.getElementById('rec-dot_kham').value = payload.dot_kham;
-        document.getElementById('rec-ho_ten').focus();
+        window.showToast(isEditing ? 'Đã cập nhật thông tin: ' + payload.ho_ten : 'Đã tiếp nhận bệnh nhân: ' + payload.ho_ten, 'success');
+        if (!isEditing) {
+          form.reset();
+          document.getElementById('rec-dot_kham').value = payload.dot_kham;
+          document.getElementById('rec-ho_ten').focus();
+        } else {
+          if (window.App && window.App.selectPatient) {
+            await window.App.selectPatient(p.id);
+          }
+        }
         if (window.App && window.App.loadPatientList) {
           window.App.loadPatientList();
         }
@@ -180,47 +230,49 @@ function renderReceptionView(container) {
   const btnCancel = document.getElementById('btn-cancel-import');
   const btnSubmit = document.getElementById('btn-submit-import');
 
-  btnOpen.onclick = () => modal.classList.remove('hidden');
-  btnClose.onclick = () => modal.classList.add('hidden');
-  btnCancel.onclick = () => modal.classList.add('hidden');
+  if (btnOpen) btnOpen.onclick = () => modal.classList.remove('hidden');
+  if (btnClose) btnClose.onclick = () => modal.classList.add('hidden');
+  if (btnCancel) btnCancel.onclick = () => modal.classList.add('hidden');
 
-  btnSubmit.onclick = async () => {
-    const fileInput = document.getElementById('import-excel-file');
-    const dotKhamInput = document.getElementById('import-dot_kham');
-    if (!fileInput.files || fileInput.files.length === 0) {
-      return alert('Vui lòng chọn 1 file Excel');
-    }
-
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-    formData.append('dot_kham', dotKhamInput.value || 'Đoàn KSK ' + new Date().toLocaleDateString('vi-VN'));
-
-    btnSubmit.disabled = true;
-    btnSubmit.innerText = 'Đang xử lý...';
-
-    try {
-      const res = await fetch('/api/excel/import', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data.success) {
-        window.showToast(data.message, 'success');
-        modal.classList.add('hidden');
-        fileInput.value = '';
-        if (window.App && window.App.loadPatientList) {
-          window.App.loadPatientList();
-        }
-      } else {
-        window.showToast(data.message || 'Lỗi nạp Excel', 'error');
+  if (btnSubmit) {
+    btnSubmit.onclick = async () => {
+      const fileInput = document.getElementById('import-excel-file');
+      const dotKhamInput = document.getElementById('import-dot_kham');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        return alert('Vui lòng chọn 1 file Excel');
       }
-    } catch (err) {
-      window.showToast('Lỗi: ' + err.message, 'error');
-    } finally {
-      btnSubmit.disabled = false;
-      btnSubmit.innerText = 'Bắt Đầu Nạp Dữ Liệu';
-    }
-  };
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('dot_kham', dotKhamInput.value || 'Đoàn KSK ' + new Date().toLocaleDateString('vi-VN'));
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerText = 'Đang xử lý...';
+
+      try {
+        const res = await fetch('/api/excel/import', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.showToast(data.message, 'success');
+          modal.classList.add('hidden');
+          fileInput.value = '';
+          if (window.App && window.App.loadPatientList) {
+            window.App.loadPatientList();
+          }
+        } else {
+          window.showToast(data.message || 'Lỗi nạp Excel', 'error');
+        }
+      } catch (err) {
+        window.showToast('Lỗi: ' + err.message, 'error');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = 'Bắt Đầu Nạp Dữ Liệu';
+      }
+    };
+  }
 
   // Nạp danh mục Tỉnh/Thành phố, Xã/Phường, Nghề nghiệp từ API
   loadAddressLookups();
@@ -279,7 +331,6 @@ async function loadAddressLookups() {
     inputTinh.addEventListener('blur', (e) => {
       updateWards(e.target.value);
     });
-    // Nạp sẵn xã phường nếu đã có tỉnh
     updateWards(inputTinh.value || 'Thành phố Cần Thơ');
   }
 }

@@ -285,7 +285,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
     formHtml = `
       <div class="card">
         <div class="card-title">
-          <span>🩺 Kết Quả Khám Nội Khoa</span>
+          <span>🩺 Kết Quả Khám Toàn Diện Nội Khoa</span>
           <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal">Điền Nhanh: Nội Khoa Bình Thường</button>
         </div>
         <form id="form-exam">
@@ -351,7 +351,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
               <input type="text" id="ex-noi_than_tiet_nieu" class="form-control" value="${lamSang.noi_than_tiet_nieu || 'Chạm thận (-)'}">
             </div>
             <div class="form-group">
-              <label>Phân loại Thận</label>
+              <label>Phân loại Thận, Tiết niệu</label>
               <select id="ex-noi_pl_than_tiet_nieu" class="form-control">
                 <option value="1" ${lamSang.noi_pl_than_tiet_nieu === 1 ? 'selected' : ''}>1 - Loại 1</option>
                 <option value="2" ${lamSang.noi_pl_than_tiet_nieu === 2 ? 'selected' : ''}>2 - Loại 2</option>
@@ -361,12 +361,58 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
-              <label>5. Cơ xương khớp</label>
+              <label>5. Khám Nội tiết</label>
+              <input type="text" id="ex-noi_noi_tiet" class="form-control" value="${lamSang.noi_noi_tiet || 'Tuyến giáp không to, bình thường'}">
+            </div>
+            <div class="form-group">
+              <label>Phân loại Nội tiết</label>
+              <select id="ex-noi_pl_noi_tiet" class="form-control">
+                <option value="1" ${lamSang.noi_pl_noi_tiet === 1 ? 'selected' : ''}>1 - Loại 1</option>
+                <option value="2" ${lamSang.noi_pl_noi_tiet === 2 ? 'selected' : ''}>2 - Loại 2</option>
+                <option value="3" ${lamSang.noi_pl_noi_tiet === 3 ? 'selected' : ''}>3 - Loại 3</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top: 12px;">
+            <div class="form-group">
+              <label>6. Khám Cơ xương khớp</label>
               <input type="text" id="ex-noi_co_xuong_khop" class="form-control" value="${lamSang.noi_co_xuong_khop || 'Khớp hoạt động bình thường'}">
             </div>
             <div class="form-group">
-              <label>6. Thần kinh & Tâm thần</label>
-              <input type="text" id="ex-noi_than_kinh" class="form-control" value="${lamSang.noi_than_kinh || 'Tỉnh táo, tiếp xúc tốt'}">
+              <label>Phân loại Cơ xương khớp</label>
+              <select id="ex-noi_pl_co_xuong_khop" class="form-control">
+                <option value="1" ${lamSang.noi_pl_co_xuong_khop === 1 ? 'selected' : ''}>1 - Loại 1</option>
+                <option value="2" ${lamSang.noi_pl_co_xuong_khop === 2 ? 'selected' : ''}>2 - Loại 2</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top: 12px;">
+            <div class="form-group">
+              <label>7. Khám Thần kinh</label>
+              <input type="text" id="ex-noi_than_kinh" class="form-control" value="${lamSang.noi_than_kinh || 'Tỉnh táo, phản xạ tốt'}">
+            </div>
+            <div class="form-group">
+              <label>Phân loại Thần kinh</label>
+              <select id="ex-noi_pl_than_kinh" class="form-control">
+                <option value="1" ${lamSang.noi_pl_than_kinh === 1 ? 'selected' : ''}>1 - Loại 1</option>
+                <option value="2" ${lamSang.noi_pl_than_kinh === 2 ? 'selected' : ''}>2 - Loại 2</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top: 12px;">
+            <div class="form-group">
+              <label>8. Khám Tâm thần</label>
+              <input type="text" id="ex-noi_tam_than" class="form-control" value="${lamSang.noi_tam_than || 'Bình thường, tiếp xúc tốt'}">
+            </div>
+            <div class="form-group">
+              <label>Phân loại Tâm thần</label>
+              <select id="ex-noi_pl_tam_than" class="form-control">
+                <option value="1" ${lamSang.noi_pl_tam_than === 1 ? 'selected' : ''}>1 - Loại 1</option>
+                <option value="2" ${lamSang.noi_pl_tam_than === 2 ? 'selected' : ''}>2 - Loại 2</option>
+              </select>
             </div>
           </div>
 
@@ -506,59 +552,139 @@ function renderClinicExamView(container, patientData, currentRoomId) {
     formHtml = `
       <div class="card">
         <div class="card-title">
-          <span>🧪 Kết Quả Cận Lâm Sàng & Xét Nghiệm</span>
+          <span>🧪 Kết Quả Cận Lâm Sàng & Xét Nghiệm Toàn Diện</span>
           <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal">Điền Nhanh: Chỉ Số Chuẩn</button>
         </div>
         <form id="form-exam">
-          <h4 style="font-size: 14px; margin-bottom: 8px;">1. Công Thức Máu</h4>
+          <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--primary-color);">1. Huyết Học & Công Thức Máu</h4>
           <div class="form-grid">
             <div class="form-group">
               <label>Hồng cầu (T/L)</label>
-              <input type="number" step="0.01" id="ex-cls_hong_cau" class="form-control" value="${cls.cls_hong_cau || ''}" placeholder="4.5">
+              <input type="number" step="0.01" id="ex-cls_hong_cau" class="form-control" value="${cls.cls_hong_cau ?? ''}" placeholder="4.5">
             </div>
             <div class="form-group">
               <label>Bạch cầu (G/L)</label>
-              <input type="number" step="0.01" id="ex-cls_bach_cau" class="form-control" value="${cls.cls_bach_cau || ''}" placeholder="6.8">
+              <input type="number" step="0.01" id="ex-cls_bach_cau" class="form-control" value="${cls.cls_bach_cau ?? ''}" placeholder="6.8">
             </div>
             <div class="form-group">
               <label>Tiểu cầu (G/L)</label>
-              <input type="number" step="1" id="ex-cls_tieu_cau" class="form-control" value="${cls.cls_tieu_cau || ''}" placeholder="250">
+              <input type="number" step="1" id="ex-cls_tieu_cau" class="form-control" value="${cls.cls_tieu_cau ?? ''}" placeholder="250">
             </div>
             <div class="form-group">
               <label>Huyết sắc tố (g/L)</label>
-              <input type="number" step="1" id="ex-cls_huyet_sac_to" class="form-control" value="${cls.cls_huyet_sac_to || ''}" placeholder="140">
+              <input type="number" step="1" id="ex-cls_huyet_sac_to" class="form-control" value="${cls.cls_huyet_sac_to ?? ''}" placeholder="140">
             </div>
           </div>
 
-          <h4 style="font-size: 14px; margin: 16px 0 8px 0;">2. Sinh Hóa Máu</h4>
+          <h4 style="font-size: 14px; margin: 18px 0 8px 0; color: var(--primary-color);">2. Sinh Hóa Máu & Chức Năng Gan, Thận</h4>
           <div class="form-grid">
             <div class="form-group">
               <label>Đường huyết (mmol/l)</label>
-              <input type="number" step="0.1" id="ex-cls_duong_huyet" class="form-control" value="${cls.cls_duong_huyet || ''}" placeholder="5.2">
+              <input type="number" step="0.1" id="ex-cls_duong_huyet" class="form-control" value="${cls.cls_duong_huyet ?? ''}" placeholder="5.2">
             </div>
             <div class="form-group">
               <label>Ure (mmol/l)</label>
-              <input type="number" step="0.1" id="ex-cls_ure" class="form-control" value="${cls.cls_ure || ''}" placeholder="4.8">
+              <input type="number" step="0.1" id="ex-cls_ure" class="form-control" value="${cls.cls_ure ?? ''}" placeholder="4.8">
             </div>
             <div class="form-group">
               <label>Creatinin (µmol/l)</label>
-              <input type="number" step="0.1" id="ex-cls_creatinin" class="form-control" value="${cls.cls_creatinin || ''}" placeholder="80">
+              <input type="number" step="0.1" id="ex-cls_creatinin" class="form-control" value="${cls.cls_creatinin ?? ''}" placeholder="80">
             </div>
             <div class="form-group">
-              <label>AST (U/l)</label>
-              <input type="number" step="1" id="ex-cls_ast" class="form-control" value="${cls.cls_ast || ''}" placeholder="25">
+              <label>Bilirubin TP (µmol/l)</label>
+              <input type="number" step="0.1" id="ex-cls_bilirubin_tp" class="form-control" value="${cls.cls_bilirubin_tp ?? ''}" placeholder="12.5">
             </div>
             <div class="form-group">
-              <label>ALT (U/l)</label>
-              <input type="number" step="1" id="ex-cls_alt" class="form-control" value="${cls.cls_alt || ''}" placeholder="22">
+              <label>AST / GOT (U/l)</label>
+              <input type="number" step="1" id="ex-cls_ast" class="form-control" value="${cls.cls_ast ?? ''}" placeholder="25">
             </div>
             <div class="form-group">
-              <label>Cholesterol TP (mmol/l)</label>
-              <input type="number" step="0.1" id="ex-cls_cholesterol_tp" class="form-control" value="${cls.cls_cholesterol_tp || ''}" placeholder="4.6">
+              <label>ALT / GPT (U/l)</label>
+              <input type="number" step="1" id="ex-cls_alt" class="form-control" value="${cls.cls_alt ?? ''}" placeholder="22">
+            </div>
+            <div class="form-group">
+              <label>GGT (U/l)</label>
+              <input type="number" step="1" id="ex-cls_ggt" class="form-control" value="${cls.cls_ggt ?? ''}" placeholder="28">
             </div>
           </div>
 
-          <h4 style="font-size: 14px; margin: 16px 0 8px 0;">3. Chẩn Đoán Hình Ảnh</h4>
+          <h4 style="font-size: 14px; margin: 18px 0 8px 0; color: var(--primary-color);">3. Mỡ Máu (Lipid) & HbA1c</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Cholesterol TP (mmol/l)</label>
+              <input type="number" step="0.1" id="ex-cls_cholesterol_tp" class="form-control" value="${cls.cls_cholesterol_tp ?? ''}" placeholder="4.6">
+            </div>
+            <div class="form-group">
+              <label>Triglycerid (mmol/l)</label>
+              <input type="number" step="0.1" id="ex-cls_triglycerid" class="form-control" value="${cls.cls_triglycerid ?? ''}" placeholder="1.5">
+            </div>
+            <div class="form-group">
+              <label>HDL - C (mmol/l)</label>
+              <input type="number" step="0.1" id="ex-cls_hdl_c" class="form-control" value="${cls.cls_hdl_c ?? ''}" placeholder="1.3">
+            </div>
+            <div class="form-group">
+              <label>LDL - C (mmol/l)</label>
+              <input type="number" step="0.1" id="ex-cls_ldl_c" class="form-control" value="${cls.cls_ldl_c ?? ''}" placeholder="2.6">
+            </div>
+            <div class="form-group">
+              <label>HbA1c (%)</label>
+              <input type="number" step="0.1" id="ex-cls_hba1c" class="form-control" value="${cls.cls_hba1c ?? ''}" placeholder="5.4">
+            </div>
+          </div>
+
+          <h4 style="font-size: 14px; margin: 18px 0 8px 0; color: var(--primary-color);">4. Xét Nghiệm Miễn Dịch & Viêm Gan, Marker Ung Thư</h4>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>AFP (ng/ml)</label>
+              <input type="number" step="0.1" id="ex-cls_afp" class="form-control" value="${cls.cls_afp ?? ''}" placeholder="3.2">
+            </div>
+            <div class="form-group">
+              <label>CEA (ng/ml)</label>
+              <input type="number" step="0.1" id="ex-cls_cea" class="form-control" value="${cls.cls_cea ?? ''}" placeholder="2.1">
+            </div>
+            <div class="form-group">
+              <label>PSA Total (ng/ml)</label>
+              <input type="number" step="0.1" id="ex-cls_psa_total" class="form-control" value="${cls.cls_psa_total ?? ''}" placeholder="1.1">
+            </div>
+            <div class="form-group">
+              <label>HBsAg (Viêm gan B)</label>
+              <input type="text" id="ex-cls_hbsag" class="form-control" value="${cls.cls_hbsag || ''}" placeholder="Âm tính">
+            </div>
+            <div class="form-group">
+              <label>HBsAb (Kháng thể VG B)</label>
+              <input type="text" id="ex-cls_hbsab" class="form-control" value="${cls.cls_hbsab || ''}" placeholder="Dương tính / Âm tính">
+            </div>
+            <div class="form-group">
+              <label>Anti HCV (Viêm gan C)</label>
+              <input type="text" id="ex-cls_anti_hcv" class="form-control" value="${cls.cls_anti_hcv || ''}" placeholder="Âm tính">
+            </div>
+          </div>
+
+          <h4 style="font-size: 14px; margin: 18px 0 8px 0; color: var(--primary-color);">5. Xét Nghiệm Nước Tiểu & Axit Uric</h4>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Axit Uric (µmol/l)</label>
+              <input type="number" step="1" id="ex-cls_axit_uric" class="form-control" value="${cls.cls_axit_uric ?? ''}" placeholder="310">
+            </div>
+            <div class="form-group">
+              <label>Glucose (Nước tiểu)</label>
+              <input type="text" id="ex-cls_glucose" class="form-control" value="${cls.cls_glucose || ''}" placeholder="Âm tính">
+            </div>
+            <div class="form-group">
+              <label>Protein niệu</label>
+              <input type="text" id="ex-cls_protein_nieu" class="form-control" value="${cls.cls_protein_nieu || ''}" placeholder="Âm tính">
+            </div>
+            <div class="form-group">
+              <label>Hồng cầu (Nước tiểu)</label>
+              <input type="text" id="ex-cls_nuoc_tieu_hong_cau" class="form-control" value="${cls.cls_nuoc_tieu_hong_cau || ''}" placeholder="Âm tính">
+            </div>
+            <div class="form-group">
+              <label>Bạch cầu (Nước tiểu)</label>
+              <input type="text" id="ex-cls_nuoc_tieu_bach_cau" class="form-control" value="${cls.cls_nuoc_tieu_bach_cau || ''}" placeholder="Âm tính">
+            </div>
+          </div>
+
+          <h4 style="font-size: 14px; margin: 18px 0 8px 0; color: var(--primary-color);">6. Chẩn Đoán Hình Ảnh & Khác</h4>
           <div class="form-grid-3">
             <div class="form-group">
               <label>Điện tim</label>
@@ -571,6 +697,14 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Siêu âm ổ bụng</label>
               <input type="text" id="ex-cls_sieu_am" class="form-control" value="${cls.cls_sieu_am || ''}" placeholder="Các tạng chưa phát hiện bất thường">
+            </div>
+            <div class="form-group">
+              <label>CĐHA khác</label>
+              <input type="text" id="ex-cls_cdha_khac" class="form-control" value="${cls.cls_cdha_khac || ''}" placeholder="Chưa ghi nhận bất thường">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Các xét nghiệm khác</label>
+              <input type="text" id="ex-cls_xet_nghiem_khac" class="form-control" value="${cls.cls_xet_nghiem_khac || ''}" placeholder="Bình thường">
             </div>
           </div>
 
@@ -625,8 +759,10 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-noi_ho_hap').value = 'Phổi trong, không rales';
         document.getElementById('ex-noi_tieu_hoa').value = 'Bụng mềm, không đau';
         document.getElementById('ex-noi_than_tiet_nieu').value = 'Chạm thận (-)';
+        document.getElementById('ex-noi_noi_tiet').value = 'Tuyến giáp không to, bình thường';
         document.getElementById('ex-noi_co_xuong_khop').value = 'Khớp vận động bình thường';
         document.getElementById('ex-noi_than_kinh').value = 'Tỉnh táo, phản xạ tốt';
+        document.getElementById('ex-noi_tam_than').value = 'Bình thường, tiếp xúc tốt';
       } else if (currentRoomId === 'ngoai') {
         document.getElementById('ex-ngoai_ket_qua').value = 'Bình thường, không sẹo mổ cũ';
         document.getElementById('ex-ngoai_phan_loai').value = '1';
@@ -637,19 +773,44 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-san_phu_khoa_ket_qua').value = 'Bình thường, không viêm nhiễm';
         document.getElementById('ex-san_phu_khoa_phan_loai').value = '1';
       } else if (currentRoomId === 'cls') {
+        // Huyết học
         document.getElementById('ex-cls_hong_cau').value = '4.5';
         document.getElementById('ex-cls_bach_cau').value = '6.5';
         document.getElementById('ex-cls_tieu_cau').value = '240';
         document.getElementById('ex-cls_huyet_sac_to').value = '140';
+        // Sinh hóa gan, thận
         document.getElementById('ex-cls_duong_huyet').value = '5.1';
         document.getElementById('ex-cls_ure').value = '4.6';
         document.getElementById('ex-cls_creatinin').value = '75';
+        document.getElementById('ex-cls_bilirubin_tp').value = '12.5';
         document.getElementById('ex-cls_ast').value = '24';
         document.getElementById('ex-cls_alt').value = '22';
+        document.getElementById('ex-cls_ggt').value = '28';
+        // Mỡ máu & HbA1c
         document.getElementById('ex-cls_cholesterol_tp').value = '4.5';
+        document.getElementById('ex-cls_triglycerid').value = '1.5';
+        document.getElementById('ex-cls_hdl_c').value = '1.3';
+        document.getElementById('ex-cls_ldl_c').value = '2.6';
+        document.getElementById('ex-cls_hba1c').value = '5.4';
+        // Miễn dịch
+        document.getElementById('ex-cls_afp').value = '3.2';
+        document.getElementById('ex-cls_cea').value = '2.1';
+        document.getElementById('ex-cls_psa_total').value = '1.1';
+        document.getElementById('ex-cls_hbsag').value = 'Âm tính';
+        document.getElementById('ex-cls_hbsab').value = 'Dương tính (>1000 mUI/ml)';
+        document.getElementById('ex-cls_anti_hcv').value = 'Âm tính';
+        // Nước tiểu & Acid uric
+        document.getElementById('ex-cls_axit_uric').value = '310';
+        document.getElementById('ex-cls_glucose').value = 'Âm tính';
+        document.getElementById('ex-cls_protein_nieu').value = 'Âm tính';
+        document.getElementById('ex-cls_nuoc_tieu_hong_cau').value = 'Âm tính';
+        document.getElementById('ex-cls_nuoc_tieu_bach_cau').value = 'Âm tính';
+        // CĐHA & Khác
         document.getElementById('ex-cls_dien_tim').value = 'Nhịp xoang đều';
         document.getElementById('ex-cls_xquang').value = 'Tim phổi bình thường';
         document.getElementById('ex-cls_sieu_am').value = 'Các tạng bình thường';
+        document.getElementById('ex-cls_cdha_khac').value = 'Chưa ghi nhận bất thường';
+        document.getElementById('ex-cls_xet_nghiem_khac').value = 'Bình thường';
       }
       window.showToast('Đã điền các chỉ số chuẩn bình thường', 'info');
     };
@@ -692,12 +853,31 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         cls_duong_huyet: document.getElementById('ex-cls_duong_huyet').value,
         cls_ure: document.getElementById('ex-cls_ure').value,
         cls_creatinin: document.getElementById('ex-cls_creatinin').value,
+        cls_bilirubin_tp: document.getElementById('ex-cls_bilirubin_tp').value,
         cls_ast: document.getElementById('ex-cls_ast').value,
         cls_alt: document.getElementById('ex-cls_alt').value,
+        cls_ggt: document.getElementById('ex-cls_ggt').value,
         cls_cholesterol_tp: document.getElementById('ex-cls_cholesterol_tp').value,
+        cls_triglycerid: document.getElementById('ex-cls_triglycerid').value,
+        cls_hdl_c: document.getElementById('ex-cls_hdl_c').value,
+        cls_ldl_c: document.getElementById('ex-cls_ldl_c').value,
+        cls_hba1c: document.getElementById('ex-cls_hba1c').value,
+        cls_afp: document.getElementById('ex-cls_afp').value,
+        cls_cea: document.getElementById('ex-cls_cea').value,
+        cls_psa_total: document.getElementById('ex-cls_psa_total').value,
+        cls_hbsag: document.getElementById('ex-cls_hbsag').value,
+        cls_hbsab: document.getElementById('ex-cls_hbsab').value,
+        cls_anti_hcv: document.getElementById('ex-cls_anti_hcv').value,
+        cls_axit_uric: document.getElementById('ex-cls_axit_uric').value,
+        cls_glucose: document.getElementById('ex-cls_glucose').value,
+        cls_protein_nieu: document.getElementById('ex-cls_protein_nieu').value,
+        cls_nuoc_tieu_hong_cau: document.getElementById('ex-cls_nuoc_tieu_hong_cau').value,
+        cls_nuoc_tieu_bach_cau: document.getElementById('ex-cls_nuoc_tieu_bach_cau').value,
         cls_dien_tim: document.getElementById('ex-cls_dien_tim').value,
         cls_xquang: document.getElementById('ex-cls_xquang').value,
         cls_sieu_am: document.getElementById('ex-cls_sieu_am').value,
+        cls_cdha_khac: document.getElementById('ex-cls_cdha_khac').value,
+        cls_xet_nghiem_khac: document.getElementById('ex-cls_xet_nghiem_khac').value,
         cls_bac_sy: document.getElementById('ex-cls_bac_sy').value
       };
       window.RoomManager.saveDoctor('cls', payload.cls_bac_sy);
@@ -741,8 +921,14 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         payload.noi_pl_tieu_hoa = document.getElementById('ex-noi_pl_tieu_hoa').value;
         payload.noi_than_tiet_nieu = document.getElementById('ex-noi_than_tiet_nieu').value;
         payload.noi_pl_than_tiet_nieu = document.getElementById('ex-noi_pl_than_tiet_nieu').value;
+        payload.noi_noi_tiet = document.getElementById('ex-noi_noi_tiet').value;
+        payload.noi_pl_noi_tiet = document.getElementById('ex-noi_pl_noi_tiet').value;
         payload.noi_co_xuong_khop = document.getElementById('ex-noi_co_xuong_khop').value;
+        payload.noi_pl_co_xuong_khop = document.getElementById('ex-noi_pl_co_xuong_khop').value;
         payload.noi_than_kinh = document.getElementById('ex-noi_than_kinh').value;
+        payload.noi_pl_than_kinh = document.getElementById('ex-noi_pl_than_kinh').value;
+        payload.noi_tam_than = document.getElementById('ex-noi_tam_than').value;
+        payload.noi_pl_tam_than = document.getElementById('ex-noi_pl_tam_than').value;
         payload.noi_bac_sy = document.getElementById('ex-noi_bac_sy').value;
         window.RoomManager.saveDoctor('noi', payload.noi_bac_sy);
       } else if (currentRoomId === 'ngoai') {

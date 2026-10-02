@@ -143,6 +143,80 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Cập nhật thông tin hành chính của bệnh nhân
+router.put('/:id', async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    const {
+      stt,
+      ho_ten,
+      ngay_sinh,
+      gioi_tinh,
+      cccd,
+      ngay_cap_cccd,
+      noi_cap_cccd,
+      so_the_bhyt,
+      sdt,
+      tinh_tp,
+      xa_phuong,
+      nghe_nghiep,
+      noi_cong_tac,
+      doi_tuong_ksk,
+      dot_kham
+    } = req.body;
+
+    if (!ho_ten || !ngay_sinh || !gioi_tinh) {
+      return res.status(400).json({ success: false, message: 'Họ tên, ngày sinh và giới tính là bắt buộc.' });
+    }
+
+    await run(
+      `UPDATE patients SET
+        stt = ?,
+        ho_ten = ?,
+        ngay_sinh = ?,
+        gioi_tinh = ?,
+        cccd = ?,
+        ngay_cap_cccd = ?,
+        noi_cap_cccd = ?,
+        so_the_bhyt = ?,
+        sdt = ?,
+        tinh_tp = ?,
+        xa_phuong = ?,
+        nghe_nghiep = ?,
+        noi_cong_tac = ?,
+        doi_tuong_ksk = ?,
+        dot_kham = ?
+      WHERE id = ?`,
+      [
+        stt ? Number(stt) : null,
+        ho_ten.trim(),
+        ngay_sinh.trim(),
+        Number(gioi_tinh),
+        cccd ? cccd.trim() : '',
+        ngay_cap_cccd ? ngay_cap_cccd.trim() : '',
+        noi_cap_cccd ? noi_cap_cccd.trim() : '',
+        so_the_bhyt ? so_the_bhyt.trim() : '',
+        sdt ? sdt.trim() : '',
+        tinh_tp ? tinh_tp.trim() : '',
+        xa_phuong ? xa_phuong.trim() : '',
+        nghe_nghiep ? nghe_nghiep.trim() : '',
+        noi_cong_tac ? noi_cong_tac.trim() : '',
+        doi_tuong_ksk ? doi_tuong_ksk.trim() : '64',
+        dot_kham ? dot_kham.trim() : 'Mặc định',
+        patientId
+      ]
+    );
+
+    const updated = await get('SELECT * FROM patients WHERE id = ?', [patientId]);
+    broadcast('PATIENT_UPDATED', updated);
+
+    res.json({ success: true, message: 'Đã cập nhật thông tin hành chính thành công.', data: updated });
+  } catch (err) {
+    console.error('Lỗi cập nhật bệnh nhân:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Lấy đầy đủ hồ sơ bệnh nhân kèm tất cả kết quả khám các chuyên khoa
 router.get('/:id', async (req, res) => {
   try {
