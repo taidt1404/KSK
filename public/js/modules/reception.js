@@ -200,6 +200,17 @@ function renderReceptionView(container, patientData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMsg = 'Lỗi máy chủ (' + res.status + ')';
+        try {
+          const errJson = JSON.parse(errorText);
+          if (errJson.message) errorMsg = errJson.message;
+        } catch (_) {}
+        window.showToast(errorMsg, 'error');
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         window.showToast(isEditing ? 'Đã cập nhật thông tin: ' + payload.ho_ten : 'Đã tiếp nhận bệnh nhân: ' + payload.ho_ten, 'success');
