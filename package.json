@@ -1,0 +1,17 @@
+{
+  "name": "ksk-lan-system",
+  "version": "1.0.0",
+  "description": "Hệ thống nhập liệu Khám Sức Khỏe định kỳ mạng nội bộ (LAN)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node tests/db.test.js && node tests/api.test.js && node tests/excel.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "sqlite3": "^5.1.7"
+  }
+}
