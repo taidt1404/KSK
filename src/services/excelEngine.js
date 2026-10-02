@@ -6,7 +6,7 @@ const { broadcast } = require('./sseService');
 
 const TEMPLATE_FILE = 'D:\\WorkSpace\\HC\\temp\\Danh sách khám định kỳ.xlsx';
 
-async function exportKskExcel({ dot_kham } = {}) {
+async function exportKskExcel({ dot_kham, date } = {}) {
   if (!fs.existsSync(TEMPLATE_FILE)) {
     throw new Error(`Không tìm thấy file mẫu tại: ${TEMPLATE_FILE}`);
   }
@@ -42,6 +42,36 @@ async function exportKskExcel({ dot_kham } = {}) {
     sql += ' AND p.dot_kham = ?';
     params.push(dot_kham.trim());
   }
+
+  if (date && date.trim()) {
+    const d = date.trim();
+    let isoDate = d;
+    let vnDate = d;
+    let vnDateNoPad = d;
+    if (d.includes('-')) {
+      const parts = d.split('-');
+      if (parts.length === 3) {
+        isoDate = d;
+        vnDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        vnDateNoPad = `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
+      }
+    } else if (d.includes('/')) {
+      const parts = d.split('/');
+      if (parts.length === 3) {
+        isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        vnDate = d;
+        vnDateNoPad = `${parseInt(parts[0], 10)}/${parseInt(parts[1], 10)}/${parts[2]}`;
+      }
+    }
+    sql += ` AND (
+      date(p.created_at, 'localtime') = ?
+      OR t.ngay_do = ? OR t.ngay_do = ?
+      OR k.noi_ngay_kham = ? OR k.noi_ngay_kham = ?
+      OR kl.ngay_ket_luan = ? OR kl.ngay_ket_luan = ?
+    )`;
+    params.push(isoDate, vnDate, vnDateNoPad, vnDate, vnDateNoPad, vnDate, vnDateNoPad);
+  }
+
   sql += ' ORDER BY p.stt ASC, p.id ASC';
 
   const rows = await all(sql, params);
@@ -187,6 +217,32 @@ async function exportKskExcel({ dot_kham } = {}) {
     r.getCell(105).value = p.ngay_ket_luan || '';
     r.getCell(106).value = p.bac_si_ket_luan || '';
     r.getCell(107).value = p.ma_cskcb || '';
+
+    // Áp dụng chuẩn Times New Roman 12, chữ đen #000000, không in nghiêng, viền mỏng
+    for (let colIdx = 1; colIdx <= 108; colIdx++) {
+      const cell = r.getCell(colIdx);
+      cell.font = {
+        name: 'Times New Roman',
+        size: 12,
+        color: { argb: 'FF000000' },
+        italic: false,
+        bold: false
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+        left: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+        bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+        right: { style: 'thin', color: { argb: 'FFBFBFBF' } }
+      };
+
+      // Căn giữa các cột mã, ngày, số, phân loại; căn trái các cột văn bản
+      if ([1, 3, 4, 6, 17, 23, 25, 27, 29, 31, 33, 35, 37, 39, 42, 49, 56, 61, 64, 67, 101, 103, 105, 107].includes(colIdx)) {
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      } else {
+        cell.alignment = { vertical: 'middle', horizontal: 'left' };
+      }
+    }
+    r.height = 22;
 
     r.commit();
   });

@@ -15,14 +15,14 @@ const upload = multer({ dest: uploadDir });
 // 1. Tải về file Excel kết quả KSK (108 cột chuẩn 100%)
 router.get('/export', async (req, res) => {
   try {
-    const { dot_kham } = req.query;
-    console.log(`Bắt đầu xuất Excel KSK (Đợt khám: ${dot_kham || 'Tất cả'})...`);
+    const { dot_kham, date } = req.query;
+    console.log(`Bắt đầu xuất Excel KSK (Đợt khám: ${dot_kham || 'Tất cả'}, Ngày: ${date || 'Tất cả'})...`);
 
-    const workbook = await exportKskExcel({ dot_kham });
+    const workbook = await exportKskExcel({ dot_kham, date });
 
     const safeName = (dot_kham || 'Tong_hop').replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const filename = `Ket_qua_KSK_${safeName}_${dateStr}.xlsx`;
+    const safeDate = date ? date.replace(/[^0-9]/g, '') : new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const filename = `Ket_qua_KSK_${safeName}_${safeDate}.xlsx`;
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);

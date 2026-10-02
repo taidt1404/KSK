@@ -6,7 +6,7 @@ const { broadcast } = require('../services/sseService');
 // Lấy danh sách bệnh nhân kèm trạng thái khám từng phòng
 router.get('/', async (req, res) => {
   try {
-    const { q, dot_kham, room, status } = req.query;
+    const { q, dot_kham, room, status, date } = req.query;
     let sql = `
       SELECT 
         p.*,
@@ -38,6 +38,35 @@ router.get('/', async (req, res) => {
     if (dot_kham && dot_kham.trim()) {
       sql += ` AND p.dot_kham = ?`;
       params.push(dot_kham.trim());
+    }
+
+    if (date && date.trim()) {
+      const d = date.trim();
+      let isoDate = d;
+      let vnDate = d;
+      let vnDateNoPad = d;
+      if (d.includes('-')) {
+        const parts = d.split('-');
+        if (parts.length === 3) {
+          isoDate = d;
+          vnDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+          vnDateNoPad = `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
+        }
+      } else if (d.includes('/')) {
+        const parts = d.split('/');
+        if (parts.length === 3) {
+          isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          vnDate = d;
+          vnDateNoPad = `${parseInt(parts[0], 10)}/${parseInt(parts[1], 10)}/${parts[2]}`;
+        }
+      }
+      sql += ` AND (
+        date(p.created_at, 'localtime') = ?
+        OR t.ngay_do = ? OR t.ngay_do = ?
+        OR k.noi_ngay_kham = ? OR k.noi_ngay_kham = ?
+        OR kl.ngay_ket_luan = ? OR kl.ngay_ket_luan = ?
+      )`;
+      params.push(isoDate, vnDate, vnDateNoPad, vnDate, vnDateNoPad, vnDate, vnDateNoPad);
     }
 
     sql += ` ORDER BY p.id DESC`;

@@ -4,6 +4,33 @@ let selectedPatientData = null;
 let currentFilter = 'waiting'; // 'waiting', 'done', 'all'
 let currentSearchQuery = '';
 let currentDotKham = '';
+let currentDateFilter = '';
+
+function getTodayIso() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getYesterdayIso() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateDisplay(iso) {
+  if (!iso) return '';
+  const parts = iso.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return iso;
+}
 
 // Toast Notification
 window.showToast = function (message, type = 'info') {
@@ -87,6 +114,9 @@ async function loadPatientList(autoSelectFirst = false) {
   if (currentDotKham) {
     url += `&dot_kham=${encodeURIComponent(currentDotKham)}`;
   }
+  if (currentDateFilter) {
+    url += `&date=${encodeURIComponent(currentDateFilter)}`;
+  }
 
   try {
     const res = await fetch(url);
@@ -94,6 +124,7 @@ async function loadPatientList(autoSelectFirst = false) {
     if (data.success) {
       currentPatientList = data.data;
       renderPatientList();
+      updateDateStatBadge();
 
       if (autoSelectFirst && currentPatientList.length > 0 && !selectedPatientId) {
         selectPatient(currentPatientList[0].id);
@@ -102,6 +133,30 @@ async function loadPatientList(autoSelectFirst = false) {
   } catch (err) {
     console.error('Lỗi tải danh sách bệnh nhân:', err);
   }
+}
+
+// Cập nhật thống kê số lượt khám theo ngày
+function updateDateStatBadge() {
+  const badgeEl = document.getElementById('date-stat-text');
+  if (!badgeEl) return;
+
+  const total = currentPatientList.length;
+  const doneCount = currentPatientList.filter((p) => p.da_ket_luan).length;
+  const waitingCount = total - doneCount;
+
+  const todayStr = getTodayIso();
+  const yestStr = getYesterdayIso();
+
+  let label = 'Tất cả các ngày';
+  if (currentDateFilter === todayStr) {
+    label = `Hôm nay (${formatDateDisplay(todayStr)})`;
+  } else if (currentDateFilter === yestStr) {
+    label = `Hôm qua (${formatDateDisplay(yestStr)})`;
+  } else if (currentDateFilter) {
+    label = `Ngày ${formatDateDisplay(currentDateFilter)}`;
+  }
+
+  badgeEl.innerHTML = `<strong>${label}:</strong> ${total} lượt (${doneCount} Đã xong • ${waitingCount} Chờ)`;
 }
 
 // Render thẻ bệnh nhân ở sidebar
@@ -305,12 +360,54 @@ function setupEventListeners() {
   const btnExportExcel = document.getElementById('btn-export-excel');
   if (btnExportExcel) {
     btnExportExcel.onclick = () => {
-      let exportUrl = '/api/excel/export';
+      let exportUrl = '/api/excel/export?';
+      const qParams = [];
       if (currentDotKham) {
-        exportUrl += `?dot_kham=${encodeURIComponent(currentDotKham)}`;
+        qParams.push(`dot_kham=${encodeURIComponent(currentDotKham)}`);
       }
-      window.showToast('Đang tạo file Excel 108 cột, vui lòng chờ trong giây lát...', 'info');
+      if (currentDateFilter) {
+        qParams.push(`date=${encodeURIComponent(currentDateFilter)}`);
+      }
+      exportUrl += qParams.join('&');
+      window.showToast('Đang tạo file Excel 108 cột (Times New Roman 12, chữ đen)...', 'info');
       window.location.href = exportUrl;
+    };
+  }
+
+  // Bộ lọc theo ngày
+  const filterDateInput = document.getElementById('filter-date-input');
+  const btnDateToday = document.getElementById('btn-date-today');
+  const btnDateYesterday = document.getElementById('btn-date-yesterday');
+  const btnDateAll = document.getElementById('btn-date-all');
+
+  if (filterDateInput) {
+    filterDateInput.addEventListener('change', (e) => {
+      currentDateFilter = e.target.value;
+      loadPatientList(true);
+    });
+  }
+
+  if (btnDateToday) {
+    btnDateToday.onclick = () => {
+      currentDateFilter = getTodayIso();
+      if (filterDateInput) filterDateInput.value = currentDateFilter;
+      loadPatientList(true);
+    };
+  }
+
+  if (btnDateYesterday) {
+    btnDateYesterday.onclick = () => {
+      currentDateFilter = getYesterdayIso();
+      if (filterDateInput) filterDateInput.value = currentDateFilter;
+      loadPatientList(true);
+    };
+  }
+
+  if (btnDateAll) {
+    btnDateAll.onclick = () => {
+      currentDateFilter = '';
+      if (filterDateInput) filterDateInput.value = '';
+      loadPatientList(true);
     };
   }
 

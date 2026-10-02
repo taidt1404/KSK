@@ -30,9 +30,14 @@ async function testExcel() {
 
   // Kiểm tra dòng dữ liệu thứ 5
   assert(ws.rowCount >= 5, 'Phải có dòng dữ liệu từ dòng 5 trở đi.');
-  const r5_name = ws.getRow(5).getCell(2).text;
+  const r5_cell = ws.getRow(5).getCell(2);
+  const r5_name = r5_cell.text;
   console.log(`Dòng 5 bệnh nhân: ${r5_name}`);
   assert(r5_name.length > 0, 'Phải có họ tên bệnh nhân.');
+  assert.strictEqual(r5_cell.font.name, 'Times New Roman', 'Font chữ phải là Times New Roman');
+  assert.strictEqual(r5_cell.font.size, 12, 'Cỡ chữ phải là 12');
+  assert.strictEqual(r5_cell.font.color.argb, 'FF000000', 'Màu chữ phải là màu đen');
+  assert.strictEqual(r5_cell.font.italic, false, 'Chữ không được in nghiêng');
 
   // Kiểm tra số cột
   console.log(`Tổng số cột trong worksheet: ${ws.columnCount}`);
