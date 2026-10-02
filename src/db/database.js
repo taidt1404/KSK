@@ -7,7 +7,9 @@ if (!fs.existsSync(DB_DIR)) {
   fs.mkdirSync(DB_DIR, { recursive: true });
 }
 
-const DB_PATH = path.join(DB_DIR, 'ksk.db');
+const DB_PATH = process.env.NODE_ENV === 'test'
+  ? path.join(DB_DIR, 'ksk_test.db')
+  : path.join(DB_DIR, 'ksk.db');
 
 let dbInstance = null;
 

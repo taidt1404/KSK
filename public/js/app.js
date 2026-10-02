@@ -1,10 +1,24 @@
 let currentPatientList = [];
 let selectedPatientId = null;
 let selectedPatientData = null;
-let currentFilter = 'waiting'; // 'waiting', 'done', 'all'
+let currentFilter = 'all'; // 'all', 'waiting', 'done'
 let currentSearchQuery = '';
 let currentDotKham = '';
 let currentDateFilter = '';
+
+function isPatientDoneForRoom(p, room) {
+  if (room === 'the_luc') return !!p.da_kham_the_luc;
+  if (room === 'mat') return !!p.da_kham_mat;
+  if (room === 'tmh') return !!p.da_kham_tmh;
+  if (room === 'rhm') return !!p.da_kham_rhm;
+  if (room === 'noi') return !!p.da_kham_noi;
+  if (room === 'ngoai') return !!p.da_kham_ngoai;
+  if (room === 'da_lieu') return !!p.da_kham_da_lieu;
+  if (room === 'san') return !!p.da_kham_san;
+  if (room === 'cls') return !!p.da_kham_cls;
+  if (room === 'ket_luan') return !!p.da_ket_luan;
+  return !!p.da_ket_luan;
+}
 
 function getTodayIso() {
   const d = new Date();
@@ -101,13 +115,12 @@ async function loadDotKhamList() {
   }
 }
 
+let lastFetchedAllPatients = [];
+
 // Tải danh sách bệnh nhân bên sidebar
 async function loadPatientList(autoSelectFirst = false) {
   const currentRoom = window.RoomManager.getCurrentRoom();
   let url = `/api/patients?room=${currentRoom}`;
-  if (currentFilter !== 'all') {
-    url += `&status=${currentFilter}`;
-  }
   if (currentSearchQuery) {
     url += `&q=${encodeURIComponent(currentSearchQuery)}`;
   }
@@ -122,9 +135,31 @@ async function loadPatientList(autoSelectFirst = false) {
     const res = await fetch(url);
     const data = await res.json();
     if (data.success) {
-      currentPatientList = data.data;
-      renderPatientList();
-      updateDateStatBadge();
+      lastFetchedAllPatients = data.data;
+
+      // Tính toán số lượng từng tab
+      const waitingList = lastFetchedAllPatients.filter((p) => !isPatientDoneForRoom(p, currentRoom));
+      const doneList = lastFetchedAllPatients.filter((p) => isPatientDoneForRoom(p, currentRoom));
+
+      // Cập nhật text trên các nút tab
+      const btnAll = document.getElementById('tab-btn-all');
+      const btnWaiting = document.getElementById('tab-btn-waiting');
+      const btnDone = document.getElementById('tab-btn-done');
+      if (btnAll) btnAll.innerText = `Tất Cả (${lastFetchedAllPatients.length})`;
+      if (btnWaiting) btnWaiting.innerText = `Chờ Khám (${waitingList.length})`;
+      if (btnDone) btnDone.innerText = `Đã Khám (${doneList.length})`;
+
+      // Phân bổ danh sách hiển thị theo tab hiện tại
+      if (currentFilter === 'waiting') {
+        currentPatientList = waitingList;
+      } else if (currentFilter === 'done') {
+        currentPatientList = doneList;
+      } else {
+        currentPatientList = lastFetchedAllPatients;
+      }
+
+      renderPatientList(doneList.length, waitingList.length);
+      updateDateStatBadge(lastFetchedAllPatients);
 
       if (autoSelectFirst && currentPatientList.length > 0 && !selectedPatientId) {
         selectPatient(currentPatientList[0].id);
@@ -136,12 +171,12 @@ async function loadPatientList(autoSelectFirst = false) {
 }
 
 // Cập nhật thống kê số lượt khám theo ngày
-function updateDateStatBadge() {
+function updateDateStatBadge(allList = currentPatientList) {
   const badgeEl = document.getElementById('date-stat-text');
   if (!badgeEl) return;
 
-  const total = currentPatientList.length;
-  const doneCount = currentPatientList.filter((p) => p.da_ket_luan).length;
+  const total = allList.length;
+  const doneCount = allList.filter((p) => p.da_ket_luan).length;
   const waitingCount = total - doneCount;
 
   const todayStr = getTodayIso();
@@ -159,14 +194,41 @@ function updateDateStatBadge() {
   badgeEl.innerHTML = `<strong>${label}:</strong> ${total} lượt (${doneCount} Đã xong • ${waitingCount} Chờ)`;
 }
 
+// Chuyển nhanh tab lọc từ code hoặc click
+function setFilter(filterName) {
+  currentFilter = filterName;
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    if (btn.getAttribute('data-filter') === filterName) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  loadPatientList(false);
+}
+
 // Render thẻ bệnh nhân ở sidebar
-function renderPatientList() {
+function renderPatientList(doneCount = 0, waitingCount = 0) {
   const listContainer = document.getElementById('patient-list-container');
   if (!listContainer) return;
 
   const currentRoom = window.RoomManager.getCurrentRoom();
 
   if (currentPatientList.length === 0) {
+    if (currentFilter === 'waiting' && doneCount > 0) {
+      listContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px 10px; color: var(--text-muted); font-size: 13px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
+          <div style="font-weight: 600; color: var(--text-main);">Đã khám hết!</div>
+          <p style="margin-top: 4px; font-size: 12px;">Không còn bệnh nhân nào chờ khám.</p>
+          <button type="button" class="btn btn-secondary btn-sm" style="margin-top: 12px; font-size: 12px;" onclick="window.App.setFilter('done')">
+            👉 Xem ${doneCount} bệnh nhân Đã Khám
+          </button>
+        </div>
+      `;
+      return;
+    }
+
     listContainer.innerHTML = `
       <div style="text-align: center; padding: 40px 10px; color: var(--text-muted); font-size: 13px;">
         Không tìm thấy bệnh nhân nào
@@ -434,7 +496,8 @@ window.App = {
   selectPatient,
   selectNextPatient,
   clearSelectedPatient,
-  refreshCurrentPatient
+  refreshCurrentPatient,
+  setFilter
 };
 
 document.addEventListener('DOMContentLoaded', () => {
