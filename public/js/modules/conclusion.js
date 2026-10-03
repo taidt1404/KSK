@@ -139,13 +139,14 @@ function renderConclusionView(container, patientData) {
           </div>
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label style="margin-bottom: 0;">Mã bệnh theo ICD-10 <span class="req">*</span></label>
+              <label style="margin-bottom: 0;">Mã bệnh ICD-10 (nhiều mã cách nhau dấu ;) <span class="req">*</span></label>
               <button type="button" class="btn btn-secondary btn-sm" id="btn-open-icd-modal" style="padding: 2px 8px; font-size: 11px;">
-                🔍 Tra cứu (~20.000 mã)
+                🔍 Tra cứu & Chọn nhiều mã (~20.000 mã)
               </button>
             </div>
-            <input type="text" id="kl-ma_icd10" list="list-icd10" class="form-control" value="${ketLuan.ma_icd10 || 'Z00.0'}" placeholder="Chọn hoặc gõ (VD: Z00, Z10, Z02, lái xe, cận thị...)" autocomplete="off" required>
+            <input type="text" id="kl-ma_icd10" list="list-icd10" class="form-control" value="${ketLuan.ma_icd10 || 'Z00.0'}" placeholder="Chọn hoặc gõ các mã, cách nhau dấu ; (VD: H52.1; K29; I10)" autocomplete="off" required>
             <datalist id="list-icd10"></datalist>
+            <div id="icd-tags-container" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"></div>
           </div>
           <div class="form-group">
             <label>Ngày kết luận <span class="req">*</span></label>
@@ -186,11 +187,63 @@ function renderConclusionView(container, patientData) {
   `;
 
   // Gắn sự kiện điền nhanh kết luận
+  // Helper: Hiển thị danh sách badge tag các mã ICD đã chọn
+  function renderIcdTags() {
+    const container = document.getElementById('icd-tags-container');
+    const input = document.getElementById('kl-ma_icd10');
+    if (!container || !input) return;
+
+    const raw = input.value.trim();
+    if (!raw) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const codes = [];
+    raw.split(/[;,]/).forEach(c => {
+      const trimmed = c.trim().toUpperCase();
+      if (trimmed && !codes.includes(trimmed)) codes.push(trimmed);
+    });
+
+    container.innerHTML = codes.map(code => {
+      const isZ00 = code === 'Z00.0';
+      const bg = isZ00 ? '#ecfdf5' : '#e0f2fe';
+      const text = isZ00 ? '#065f46' : '#0369a1';
+      return `
+        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; background: ${bg}; color: ${text}; border-radius: 12px; font-size: 12px; font-family: monospace; font-weight: 700; border: 1px solid rgba(0,0,0,0.06);">
+          ${code}
+          <span class="btn-remove-icd-tag" data-code="${code}" style="cursor: pointer; font-size: 14px; font-weight: bold; margin-left: 3px; opacity: 0.8;" title="Xóa mã ${code}">&times;</span>
+        </span>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.btn-remove-icd-tag').forEach(btn => {
+      btn.onclick = () => {
+        const targetCode = btn.dataset.code;
+        const currentCodes = input.value.split(/[;,]/).map(c => c.trim().toUpperCase()).filter(Boolean);
+        const remaining = currentCodes.filter(c => c !== targetCode);
+        input.value = remaining.length > 0 ? remaining.join('; ') : 'Z00.0';
+        renderIcdTags();
+        if (input.value === 'Z00.0') {
+          const descInput = document.getElementById('kl-mo_ta_benh_tat');
+          if (descInput) descInput.value = 'Hiện tại chưa phát hiện bệnh lý. Đủ sức khỏe làm việc.';
+          const plInput = document.getElementById('kl-phan_loai_suc_khoe');
+          if (plInput) plInput.value = '1';
+        }
+      };
+    });
+  }
+
+  // Khởi tạo hiển thị tags ban đầu
+  renderIcdTags();
+
+  // Gắn sự kiện điền nhanh kết luận
   const btnFillNormalKl = document.getElementById('btn-fill-normal-conclusion');
   if (btnFillNormalKl) {
     btnFillNormalKl.onclick = () => {
       document.getElementById('kl-phan_loai_suc_khoe').value = '1';
       document.getElementById('kl-ma_icd10').value = 'Z00.0';
+      renderIcdTags();
       if (document.getElementById('kl-ngay_ket_luan') && !document.getElementById('kl-ngay_ket_luan').value) {
         document.getElementById('kl-ngay_ket_luan').value = todayStr;
       }
@@ -237,34 +290,77 @@ function renderConclusionView(container, patientData) {
   const icdInput = document.getElementById('kl-ma_icd10');
   if (icdInput) {
     const handleIcdSelect = () => {
-      const val = icdInput.value.trim();
-      const match = val.match(/^([A-Z][0-9]{2}(?:\.[0-9]{1,3})?)\s*[-:]\s*(.+)$/i);
-      if (match) {
-        const code = match[1].toUpperCase();
-        const desc = match[2].trim();
-        icdInput.value = code;
-        const descInput = document.getElementById('kl-mo_ta_benh_tat');
-        if (descInput) {
-          if (!descInput.value || descInput.value.includes('Hiện tại chưa phát hiện bệnh lý')) {
-            descInput.value = code === 'Z00.0' ? 'Hiện tại chưa phát hiện bệnh lý. Đủ sức khỏe làm việc.' : desc;
+      const raw = icdInput.value.trim();
+      if (!raw.includes(' - ')) {
+        renderIcdTags();
+        return;
+      }
+
+      // Tách các đoạn mã hiện có và đoạn vừa được chọn
+      const segments = raw.split(/[;,]/).map(s => s.trim()).filter(Boolean);
+      const codes = [];
+      const descs = [];
+
+      for (const seg of segments) {
+        const match = seg.match(/^([A-Z][0-9]{2}(?:\.[0-9]{1,3})?)\s*[-:]\s*(.+)$/i);
+        if (match) {
+          const c = match[1].toUpperCase();
+          const d = match[2].trim();
+          if (!codes.includes(c)) {
+            codes.push(c);
+            descs.push(d);
           }
-        }
-        const plInput = document.getElementById('kl-phan_loai_suc_khoe');
-        if (plInput && plInput.value === '1' && code !== 'Z00.0') {
-          plInput.value = '2';
+        } else {
+          const c = seg.toUpperCase();
+          if (!codes.includes(c)) codes.push(c);
         }
       }
+
+      // Nếu có mã bệnh khác ngoài Z00.0 thì loại bỏ Z00.0
+      let finalCodes = codes;
+      if (finalCodes.length > 1 && finalCodes.includes('Z00.0')) {
+        finalCodes = finalCodes.filter(c => c !== 'Z00.0');
+      }
+
+      icdInput.value = finalCodes.join('; ');
+      renderIcdTags();
+
+      // Cập nhật mô tả bệnh tật
+      const descInput = document.getElementById('kl-mo_ta_benh_tat');
+      if (descInput && descs.length > 0) {
+        if (!descInput.value || descInput.value.includes('Hiện tại chưa phát hiện bệnh lý')) {
+          descInput.value = descs.join('; ');
+        } else {
+          const curDescs = descInput.value.split(/[;,]/).map(d => d.trim()).filter(Boolean);
+          for (const d of descs) {
+            if (!curDescs.includes(d)) curDescs.push(d);
+          }
+          descInput.value = curDescs.join('; ');
+        }
+      }
+
+      // Tự động phân loại sức khỏe sang Loại 2 nếu đang để Loại 1
+      const plInput = document.getElementById('kl-phan_loai_suc_khoe');
+      if (plInput && plInput.value === '1' && finalCodes.some(c => c !== 'Z00.0')) {
+        plInput.value = '2';
+      }
     };
+
     icdInput.addEventListener('change', handleIcdSelect);
+    icdInput.addEventListener('blur', renderIcdTags);
+
     let icdDebounce = null;
     icdInput.addEventListener('input', () => {
       if (icdInput.value.includes(' - ')) {
         handleIcdSelect();
         return;
       }
+      renderIcdTags();
       clearTimeout(icdDebounce);
       icdDebounce = setTimeout(() => {
-        loadIcd10Options(icdInput.value.trim());
+        const parts = icdInput.value.split(/[;,]/);
+        const lastPart = (parts[parts.length - 1] || '').trim();
+        loadIcd10Options(lastPart);
       }, 200);
     });
   }
@@ -273,11 +369,19 @@ function renderConclusionView(container, patientData) {
   const form = document.getElementById('form-conclusion');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    let maIcd10 = document.getElementById('kl-ma_icd10').value.trim();
-    const codeMatch = maIcd10.match(/^([A-Z][0-9]{2}(?:\.[0-9]{1,2})?)/i);
-    if (codeMatch) {
-      maIcd10 = codeMatch[1].toUpperCase();
-    }
+    let rawIcd = document.getElementById('kl-ma_icd10').value;
+    const codes = [];
+    rawIcd.split(/[;,]/).forEach(part => {
+      const m = part.trim().match(/^([A-Z][0-9]{2}(?:\.[0-9]{1,3})?)/i);
+      if (m) {
+        const c = m[1].toUpperCase();
+        if (!codes.includes(c)) codes.push(c);
+      } else if (part.trim()) {
+        const c = part.trim().toUpperCase();
+        if (!codes.includes(c)) codes.push(c);
+      }
+    });
+    const maIcd10 = codes.length > 0 ? codes.join('; ') : 'Z00.0';
 
     const payload = {
       phan_loai_suc_khoe: document.getElementById('kl-phan_loai_suc_khoe').value,
@@ -350,16 +454,30 @@ async function loadIcd10Options(query = '') {
   }
 }
 
-// Modal tra cứu toàn diện ~20.000 mã ICD-10
+// Modal tra cứu toàn diện ~20.000 mã ICD-10 (Hỗ trợ chọn nhiều mã cách nhau bởi dấu ;)
 function openIcd10Modal() {
   let modal = document.getElementById('modal-icd10');
   if (modal) modal.remove();
+
+  // Khởi tạo danh sách mã đã chọn từ input hiện tại
+  const icdInput = document.getElementById('kl-ma_icd10');
+  const currentVal = icdInput ? icdInput.value.trim() : 'Z00.0';
+  const selectedIcdMap = new Map(); // code -> desc
+
+  if (currentVal) {
+    currentVal.split(/[;,]/).forEach(c => {
+      const code = c.trim().toUpperCase();
+      if (code) {
+        selectedIcdMap.set(code, '');
+      }
+    });
+  }
 
   modal = document.createElement('div');
   modal.id = 'modal-icd10';
   modal.className = 'modal-overlay';
   modal.innerHTML = `
-    <div class="modal-content" style="max-width: 820px; max-height: 85vh; display: flex; flex-direction: column;">
+    <div class="modal-content" style="max-width: 860px; max-height: 88vh; display: flex; flex-direction: column;">
       <div class="modal-header">
         <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
           <span>📚 Tra Cứu Danh Mục ICD-10 Toàn Diện (~20.000 Mã Bộ Y Tế)</span>
@@ -367,10 +485,21 @@ function openIcd10Modal() {
         <button type="button" class="modal-close" id="btn-close-icd-modal">✕</button>
       </div>
       <div class="modal-body" style="padding: 16px 20px; overflow-y: hidden; display: flex; flex-direction: column; flex: 1;">
-        <div style="margin-bottom: 12px;">
+        <!-- Thanh danh sách các mã đang chọn -->
+        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px; flex: 1;">
+            <strong style="font-size: 13px; color: var(--text-main); margin-right: 4px;">Đã chọn (<span id="icd-modal-count">0</span> mã):</strong>
+            <div id="icd-modal-selected-chips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-apply-icd-modal" style="padding: 6px 16px; font-weight: 700; font-size: 13px;">
+            ✅ Hoàn thành & Áp dụng
+          </button>
+        </div>
+
+        <div style="margin-bottom: 10px;">
           <input type="text" id="icd-modal-search" class="form-control" placeholder="🔎 Gõ mã hoặc tên bệnh (VD: Z00, Z10, lái xe, tuyển quân, đi làm, cận thị, huyết áp, trẻ em...)" style="font-size: 14px; padding: 10px 14px;" autofocus>
         </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
           <span class="badge-chip" data-q="" style="cursor: pointer; padding: 4px 10px; background: #e0f2fe; color: #0369a1; border-radius: 14px; font-size: 12px; font-weight: 600;">⭐ Ưu tiên KSK</span>
           <span class="badge-chip" data-q="Z00.0" style="cursor: pointer; padding: 4px 10px; background: #f1f5f9; border-radius: 14px; font-size: 12px;">Z00.0 - KSK Tổng quát</span>
           <span class="badge-chip" data-q="Z10" style="cursor: pointer; padding: 4px 10px; background: #fef3c7; color: #92400e; border-radius: 14px; font-size: 12px; font-weight: bold;">Z10 - KSK Công ty / Cơ quan</span>
@@ -381,19 +510,112 @@ function openIcd10Modal() {
           <span class="badge-chip" data-q="cận thị" style="cursor: pointer; padding: 4px 10px; background: #f1f5f9; border-radius: 14px; font-size: 12px;">👁️ Mắt</span>
           <span class="badge-chip" data-q="huyết áp" style="cursor: pointer; padding: 4px 10px; background: #f1f5f9; border-radius: 14px; font-size: 12px;">🫀 Tim mạch</span>
           <span class="badge-chip" data-q="tiểu đường" style="cursor: pointer; padding: 4px 10px; background: #f1f5f9; border-radius: 14px; font-size: 12px;">🍬 Tiểu đường</span>
+          <span class="badge-chip" data-q="dạ dày" style="cursor: pointer; padding: 4px 10px; background: #f1f5f9; border-radius: 14px; font-size: 12px;">🫁 Tiêu hóa</span>
           <span class="badge-chip" data-q="răng" style="cursor: pointer; padding: 4px 10px; background: #f1f5f9; border-radius: 14px; font-size: 12px;">🦷 Răng Hàm Mặt</span>
         </div>
-        <div id="icd-modal-results" style="border: 1px solid var(--border); border-radius: 8px; flex: 1; overflow-y: auto; min-height: 280px; max-height: 420px;">
+        <div id="icd-modal-results" style="border: 1px solid var(--border); border-radius: 8px; flex: 1; overflow-y: auto; min-height: 260px; max-height: 380px;">
           <div style="text-align: center; padding: 30px; color: var(--text-muted);">Đang tải danh mục...</div>
         </div>
       </div>
       <div class="modal-footer" style="padding: 10px 20px;">
-        <span style="font-size: 12px; color: var(--text-muted); margin-right: auto;">Tìm kiếm tự động tức thời trên 19.568 mã ICD-10</span>
+        <span style="font-size: 12px; color: var(--text-muted); margin-right: auto;">Bấm '+ Chọn mã' để chọn thêm nhiều mã bệnh. Bấm '✅ Hoàn thành & Áp dụng' để lưu.</span>
         <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-icd-modal">Đóng</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+
+  function updateModalSelectedBar() {
+    const chipsContainer = document.getElementById('icd-modal-selected-chips');
+    const countSpan = document.getElementById('icd-modal-count');
+    if (!chipsContainer || !countSpan) return;
+
+    countSpan.innerText = selectedIcdMap.size;
+    const codes = Array.from(selectedIcdMap.keys());
+
+    chipsContainer.innerHTML = codes.map(code => {
+      const isZ00 = code === 'Z00.0';
+      const bg = isZ00 ? '#ecfdf5' : '#e0f2fe';
+      const text = isZ00 ? '#065f46' : '#0369a1';
+      return `
+        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: ${bg}; color: ${text}; border-radius: 12px; font-size: 12px; font-family: monospace; font-weight: 700; border: 1px solid rgba(0,0,0,0.06);">
+          ${code}
+          <span class="modal-chip-remove" data-code="${code}" style="cursor: pointer; font-size: 14px; font-weight: bold; margin-left: 2px; opacity: 0.8;" title="Bỏ chọn">&times;</span>
+        </span>
+      `;
+    }).join('');
+
+    chipsContainer.querySelectorAll('.modal-chip-remove').forEach(btn => {
+      btn.onclick = () => {
+        const code = btn.dataset.code;
+        selectedIcdMap.delete(code);
+        updateModalSelectedBar();
+        renderModalResults(document.getElementById('icd-modal-search')?.value.trim() || '');
+      };
+    });
+  }
+
+  function applySelectedCodes() {
+    const finalCodes = Array.from(selectedIcdMap.keys());
+    const finalVal = finalCodes.length > 0 ? finalCodes.join('; ') : 'Z00.0';
+    if (icdInput) icdInput.value = finalVal;
+
+    // Cập nhật mô tả bệnh tật
+    const descs = Array.from(selectedIcdMap.values()).filter(Boolean);
+    const descInput = document.getElementById('kl-mo_ta_benh_tat');
+    if (descInput) {
+      if (finalVal === 'Z00.0') {
+        descInput.value = 'Hiện tại chưa phát hiện bệnh lý. Đủ sức khỏe làm việc.';
+      } else if (descs.length > 0) {
+        descInput.value = descs.join('; ');
+      }
+    }
+
+    const plInput = document.getElementById('kl-phan_loai_suc_khoe');
+    if (plInput) {
+      if (finalVal === 'Z00.0') {
+        plInput.value = '1';
+      } else if (plInput.value === '1' && finalCodes.some(c => c !== 'Z00.0')) {
+        plInput.value = '2';
+      }
+    }
+
+    // Hiển thị tags trên form chính
+    const renderTagsFn = document.getElementById('icd-tags-container') ? () => {
+      const container = document.getElementById('icd-tags-container');
+      const input = document.getElementById('kl-ma_icd10');
+      if (!container || !input) return;
+      const codes = input.value.split(/[;,]/).map(c => c.trim().toUpperCase()).filter(Boolean);
+      container.innerHTML = codes.map(code => {
+        const isZ00 = code === 'Z00.0';
+        const bg = isZ00 ? '#ecfdf5' : '#e0f2fe';
+        const text = isZ00 ? '#065f46' : '#0369a1';
+        return `
+          <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; background: ${bg}; color: ${text}; border-radius: 12px; font-size: 12px; font-family: monospace; font-weight: 700; border: 1px solid rgba(0,0,0,0.06);">
+            ${code}
+            <span class="btn-remove-icd-tag" data-code="${code}" style="cursor: pointer; font-size: 14px; font-weight: bold; margin-left: 3px; opacity: 0.8;" title="Xóa mã ${code}">&times;</span>
+          </span>
+        `;
+      }).join('');
+      container.querySelectorAll('.btn-remove-icd-tag').forEach(btn => {
+        btn.onclick = () => {
+          const targetCode = btn.dataset.code;
+          const currentCodes = input.value.split(/[;,]/).map(c => c.trim().toUpperCase()).filter(Boolean);
+          const remaining = currentCodes.filter(c => c !== targetCode);
+          input.value = remaining.length > 0 ? remaining.join('; ') : 'Z00.0';
+          renderTagsFn();
+        };
+      });
+    } : null;
+
+    if (renderTagsFn) renderTagsFn();
+
+    modal.remove();
+    window.showToast(`Đã chọn ${finalCodes.length} mã ICD-10: ${finalVal}`, 'success');
+  }
+
+  const applyBtn = document.getElementById('btn-apply-icd-modal');
+  if (applyBtn) applyBtn.onclick = applySelectedCodes;
 
   const closeBtn = document.getElementById('btn-close-icd-modal');
   const cancelBtn = document.getElementById('btn-cancel-icd-modal');
@@ -426,78 +648,72 @@ function openIcd10Modal() {
     };
   });
 
-  renderModalResults('');
-}
+  async function renderModalResults(query) {
+    const container = document.getElementById('icd-modal-results');
+    if (!container) return;
+    container.innerHTML = '<div style="text-align: center; padding: 25px; color: var(--text-muted);">⏳ Đang tra cứu danh mục...</div>';
 
-async function renderModalResults(query) {
-  const container = document.getElementById('icd-modal-results');
-  if (!container) return;
-  container.innerHTML = '<div style="text-align: center; padding: 25px; color: var(--text-muted);">⏳ Đang tra cứu danh mục...</div>';
+    try {
+      const res = await fetch(`/api/lookups?category=ICD10&q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (!data.success || !data.data || data.data.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Không tìm thấy mã ICD-10 phù hợp</div>';
+        return;
+      }
 
-  try {
-    const res = await fetch(`/api/lookups?category=ICD10&q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    if (!data.success || !data.data || data.data.length === 0) {
-      container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Không tìm thấy mã ICD-10 phù hợp</div>';
-      return;
-    }
+      container.innerHTML = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: #f8fafc; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border);">
+              <th style="padding: 10px 12px; text-align: left; width: 110px;">Mã ICD</th>
+              <th style="padding: 10px 12px; text-align: left;">Tên Bệnh & Chẩn Đoán Chi Tiết</th>
+              <th style="padding: 10px 12px; text-align: center; width: 130px;">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.data.map((item, idx) => {
+              const cleanDesc = item.name.replace(/^[A-Z0-9.]+\s*-\s*/, '');
+              const isSelected = selectedIcdMap.has(item.code);
+              const isHighlight = item.code.startsWith('Z00') || item.code === 'Z10' || item.code.startsWith('Z02');
+              return `
+                <tr style="border-bottom: 1px solid var(--border); ${isSelected ? 'background: #eff6ff;' : (isHighlight ? 'background: #f0fdf4;' : (idx % 2 === 0 ? 'background: #ffffff;' : 'background: #fbfcfd;'))}">
+                  <td style="padding: 8px 12px; font-weight: 700; color: ${isSelected ? '#2563eb' : (isHighlight ? '#15803d' : 'var(--primary)')}; font-family: monospace; font-size: 14px;">${item.code}</td>
+                  <td style="padding: 8px 12px; line-height: 1.4;">${cleanDesc}</td>
+                  <td style="padding: 8px 12px; text-align: center;">
+                    <button type="button" class="btn btn-sm btn-select-icd" data-code="${item.code}" data-desc="${cleanDesc.replace(/"/g, '&quot;')}" style="padding: 4px 12px; font-size: 12px; font-weight: 600; ${isSelected ? 'background: #16a34a; border-color: #16a34a; color: white;' : 'background: #2563eb; border-color: #2563eb; color: white;'}">
+                      ${isSelected ? '✓ Đã chọn' : '+ Chọn mã'}
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
 
-    container.innerHTML = `
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-        <thead>
-          <tr style="background: #f8fafc; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border);">
-            <th style="padding: 10px 12px; text-align: left; width: 110px;">Mã ICD</th>
-            <th style="padding: 10px 12px; text-align: left;">Tên Bệnh & Chẩn Đoán Chi Tiết</th>
-            <th style="padding: 10px 12px; text-align: center; width: 110px;">Thao Tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data.data.map((item, idx) => {
-            const cleanDesc = item.name.replace(/^[A-Z0-9.]+\s*-\s*/, '');
-            const isHighlight = item.code.startsWith('Z00') || item.code === 'Z10' || item.code.startsWith('Z02');
-            return `
-              <tr style="border-bottom: 1px solid var(--border); ${isHighlight ? 'background: #f0fdf4;' : (idx % 2 === 0 ? 'background: #ffffff;' : 'background: #fbfcfd;')}">
-                <td style="padding: 8px 12px; font-weight: 700; color: ${isHighlight ? '#15803d' : 'var(--primary)'}; font-family: monospace; font-size: 14px;">${item.code}</td>
-                <td style="padding: 8px 12px; line-height: 1.4;">${cleanDesc}</td>
-                <td style="padding: 8px 12px; text-align: center;">
-                  <button type="button" class="btn btn-primary btn-sm btn-select-icd" data-code="${item.code}" data-desc="${cleanDesc.replace(/"/g, '&quot;')}" style="padding: 4px 10px; font-size: 12px;">
-                    Chọn mã
-                  </button>
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    `;
-
-    container.querySelectorAll('.btn-select-icd').forEach(btn => {
-      btn.onclick = () => {
-        const code = btn.dataset.code;
-        const desc = btn.dataset.desc;
-        const icdInput = document.getElementById('kl-ma_icd10');
-        if (icdInput) icdInput.value = code;
-
-        const descInput = document.getElementById('kl-mo_ta_benh_tat');
-        if (descInput) {
-          if (!descInput.value || descInput.value.includes('Hiện tại chưa phát hiện bệnh lý')) {
-            descInput.value = code === 'Z00.0' ? 'Hiện tại chưa phát hiện bệnh lý. Đủ sức khỏe làm việc.' : desc;
+      container.querySelectorAll('.btn-select-icd').forEach(btn => {
+        btn.onclick = () => {
+          const code = btn.dataset.code;
+          const desc = btn.dataset.desc;
+          if (selectedIcdMap.has(code)) {
+            selectedIcdMap.delete(code);
+          } else {
+            if (code !== 'Z00.0' && selectedIcdMap.has('Z00.0')) {
+              selectedIcdMap.delete('Z00.0');
+            }
+            selectedIcdMap.set(code, desc);
           }
-        }
-
-        const plInput = document.getElementById('kl-phan_loai_suc_khoe');
-        if (plInput && plInput.value === '1' && code !== 'Z00.0') {
-          plInput.value = '2';
-        }
-
-        const modal = document.getElementById('modal-icd10');
-        if (modal) modal.remove();
-        window.showToast(`Đã chọn mã [${code}] - ${desc}`, 'success');
-      };
-    });
-  } catch (err) {
-    container.innerHTML = `<div style="text-align: center; padding: 25px; color: var(--danger);">Lỗi tải dữ liệu: ${err.message}</div>`;
+          updateModalSelectedBar();
+          renderModalResults(searchInput ? searchInput.value.trim() : '');
+        };
+      });
+    } catch (err) {
+      container.innerHTML = `<div style="text-align: center; padding: 25px; color: var(--danger);">Lỗi tải dữ liệu: ${err.message}</div>`;
+    }
   }
+
+  updateModalSelectedBar();
+  renderModalResults('');
 }
 
 window.ConclusionModule = {
