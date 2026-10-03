@@ -76,8 +76,8 @@ async function testApi() {
         ma_icd10: 'K02',
         loi_dan_bac_si: 'Đi hàn răng số 7',
         ngay_ket_luan: '02/10/2026',
-        bac_si_ket_luan: 'BS. Trưởng Đoàn',
-        ma_cskcb: '79001'
+        bac_si_ket_luan: 'Nguyễn Văn Làn',
+        ma_cskcb: '24275'
       })
     });
     const ketLuanJson = await ketLuanRes.json();

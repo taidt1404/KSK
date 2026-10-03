@@ -18,6 +18,17 @@ function renderConclusionView(container, patientData) {
   const savedDoctor = window.RoomManager.getSavedDoctor('ket_luan');
   const todayStr = new Date().toLocaleDateString('vi-VN');
 
+  const DOCTOR_OPTIONS = [
+    'Nguyễn Văn Làn',
+    'Nguyễn Văn Thiện',
+    'Nguyễn Hữu Chức'
+  ];
+  let selectedDoctor = ketLuan.bac_si_ket_luan || savedDoctor || DOCTOR_OPTIONS[0];
+  if (!DOCTOR_OPTIONS.includes(selectedDoctor)) {
+    selectedDoctor = (savedDoctor && DOCTOR_OPTIONS.includes(savedDoctor)) ? savedDoctor : DOCTOR_OPTIONS[0];
+  }
+  const cskcbVal = (ketLuan.ma_cskcb && ketLuan.ma_cskcb !== '79001') ? ketLuan.ma_cskcb : '24275';
+
   // Đánh giá tình trạng hoàn thành các phòng
   const checks = [
     {
@@ -149,11 +160,13 @@ function renderConclusionView(container, patientData) {
         <div class="form-grid-2" style="margin-top: 14px;">
           <div class="form-group">
             <label>Bác sĩ kết luận <span class="req">*</span></label>
-            <input type="text" id="kl-bac_si_ket_luan" class="form-control" value="${ketLuan.bac_si_ket_luan || savedDoctor}" placeholder="Họ và tên Bác sĩ kết luận" required>
+            <select id="kl-bac_si_ket_luan" class="form-control" required>
+              ${DOCTOR_OPTIONS.map(doc => `<option value="${doc}" ${selectedDoctor === doc ? 'selected' : ''}>${doc}</option>`).join('')}
+            </select>
           </div>
           <div class="form-group">
             <label>Mã cơ sở KCB thực hiện khám</label>
-            <input type="text" id="kl-ma_cskcb" class="form-control" value="${ketLuan.ma_cskcb || '79001'}" placeholder="Mã 5 chữ số CS KCB">
+            <input type="text" id="kl-ma_cskcb" class="form-control" value="${cskcbVal}" placeholder="Mã 5 chữ số CS KCB">
           </div>
         </div>
 
@@ -178,9 +191,15 @@ function renderConclusionView(container, patientData) {
       document.getElementById('kl-mo_ta_benh_tat').value = 'Hiện tại chưa phát hiện bệnh lý. Đủ sức khỏe làm việc.';
       document.getElementById('kl-loi_dan_bac_si').value = 'Khám sức khỏe định kỳ hàng năm. Giữ gìn chế độ dinh dưỡng và vận động hợp lý.';
       const bsKl = document.getElementById('kl-bac_si_ket_luan');
-      if (bsKl && !bsKl.value) bsKl.value = savedDoctor || 'BS. Kết luận KSK';
+      if (bsKl) {
+        if (savedDoctor && DOCTOR_OPTIONS.includes(savedDoctor)) {
+          bsKl.value = savedDoctor;
+        } else if (!bsKl.value || !DOCTOR_OPTIONS.includes(bsKl.value)) {
+          bsKl.value = DOCTOR_OPTIONS[0];
+        }
+      }
       const cskcb = document.getElementById('kl-ma_cskcb');
-      if (cskcb && !cskcb.value) cskcb.value = '79001';
+      if (cskcb) cskcb.value = '24275';
       window.showToast('Đã điền nhanh kết luận chuẩn (Loại 1)', 'info');
     };
   }

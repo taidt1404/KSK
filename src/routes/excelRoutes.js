@@ -20,12 +20,19 @@ router.get('/export', async (req, res) => {
 
     const workbook = await exportKskExcel({ dot_kham, date });
 
-    const safeName = (dot_kham || 'Tong_hop').replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+    // Loại bỏ dấu tiếng Việt để tạo tên file ASCII an toàn cho HTTP Header
+    const asciiDotKham = (dot_kham || 'Tong_hop')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .replace(/[^a-zA-Z0-9_]/g, '_');
     const safeDate = date ? date.replace(/[^0-9]/g, '') : new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const filename = `Ket_qua_KSK_${safeName}_${safeDate}.xlsx`;
+    const filename = `Ket_qua_KSK_${asciiDotKham}_${safeDate}.xlsx`;
+    const encodedFilename = encodeURIComponent(filename);
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"; filename*=UTF-8''${encodedFilename}`);
     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 

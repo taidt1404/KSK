@@ -252,7 +252,7 @@ async function exportKskExcel({ dot_kham, date } = {}) {
     r.getCell(104).value = p.loi_dan_bac_si || '';
     r.getCell(105).value = p.ngay_ket_luan || '';
     r.getCell(106).value = p.bac_si_ket_luan || '';
-    r.getCell(107).value = p.ma_cskcb || '';
+    r.getCell(107).value = (p.ma_cskcb && p.ma_cskcb !== '79001') ? p.ma_cskcb : '24275';
 
     // Áp dụng chuẩn Times New Roman 12, chữ đen #000000, không in nghiêng, viền mỏng
     for (let colIdx = 1; colIdx <= 108; colIdx++) {

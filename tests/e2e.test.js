@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 const assert = require('assert');
 const ExcelJS = require('exceljs');
 const { startServer } = require('../src/server');
@@ -117,8 +118,8 @@ async function testE2E() {
         ma_icd10: 'Z00.0',
         loi_dan_bac_si: 'Duy trì chế độ sinh hoạt lành mạnh',
         ngay_ket_luan: '02/10/2026',
-        bac_si_ket_luan: 'BS. Trưởng Đoàn Vũ',
-        ma_cskcb: '79001'
+        bac_si_ket_luan: 'Nguyễn Văn Làn',
+        ma_cskcb: '24275'
       })
     });
 
@@ -131,8 +132,8 @@ async function testE2E() {
         ma_icd10: 'H52.1',
         loi_dan_bac_si: 'Đeo kính đúng độ, khám mắt định kỳ',
         ngay_ket_luan: '02/10/2026',
-        bac_si_ket_luan: 'BS. Trưởng Đoàn Vũ',
-        ma_cskcb: '79001'
+        bac_si_ket_luan: 'Nguyễn Văn Làn',
+        ma_cskcb: '24275'
       })
     });
 
