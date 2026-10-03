@@ -730,6 +730,8 @@ function renderClinicExamView(container, patientData, currentRoomId) {
   if (btnNormal) {
     btnNormal.onclick = () => {
       if (currentRoomId === 'the_luc') {
+        const ngayDo = document.getElementById('ex-ngay_do');
+        if (ngayDo && !ngayDo.value) ngayDo.value = todayStr;
         document.getElementById('ex-can_nang').value = '60';
         document.getElementById('ex-chieu_cao').value = '165';
         document.getElementById('ex-mach').value = '75';
@@ -737,11 +739,19 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-ha_tam_truong').value = '80';
         document.getElementById('ex-vong_nguc').value = '82';
         document.getElementById('ex-phan_loai_the_luc').value = '1';
+        const nguoiKham = document.getElementById('ex-nguoi_kham');
+        if (nguoiKham && !nguoiKham.value) nguoiKham.value = savedDoctor || 'BS/ĐD Thể lực';
       } else if (currentRoomId === 'mat') {
         document.getElementById('ex-mat_khong_kinh_phai').value = '10';
         document.getElementById('ex-mat_khong_kinh_trai').value = '10';
+        const coKinhPhai = document.getElementById('ex-mat_co_kinh_phai');
+        if (coKinhPhai) coKinhPhai.value = '10';
+        const coKinhTrai = document.getElementById('ex-mat_co_kinh_trai');
+        if (coKinhTrai) coKinhTrai.value = '10';
         document.getElementById('ex-mat_benh').value = 'Không có';
         document.getElementById('ex-mat_phan_loai').value = '1';
+        const bsMat = document.getElementById('ex-mat_bac_sy');
+        if (bsMat && !bsMat.value) bsMat.value = savedDoctor || 'BS. Chuyên khoa Mắt';
       } else if (currentRoomId === 'tmh') {
         document.getElementById('ex-tmh_tai_trai_thuong').value = '5';
         document.getElementById('ex-tmh_tai_trai_tham').value = '0.5';
@@ -749,29 +759,63 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-tmh_tai_phai_tham').value = '0.5';
         document.getElementById('ex-tmh_benh').value = 'Bình thường';
         document.getElementById('ex-tmh_phan_loai').value = '1';
+        const bsTmh = document.getElementById('ex-tmh_bac_sy');
+        if (bsTmh && !bsTmh.value) bsTmh.value = savedDoctor || 'BS. Chuyên khoa TMH';
       } else if (currentRoomId === 'rhm') {
         document.getElementById('ex-rhm_ham_tren').value = 'Đủ răng, bình thường';
         document.getElementById('ex-rhm_ham_duoi').value = 'Đủ răng, bình thường';
         document.getElementById('ex-rhm_benh').value = 'Không có';
         document.getElementById('ex-rhm_phan_loai').value = '1';
+        const bsRhm = document.getElementById('ex-rhm_bac_sy');
+        if (bsRhm && !bsRhm.value) bsRhm.value = savedDoctor || 'BS. Chuyên khoa RHM';
       } else if (currentRoomId === 'noi') {
+        const ngayKhamNoi = document.getElementById('ex-noi_ngay_kham');
+        if (ngayKhamNoi && !ngayKhamNoi.value) ngayKhamNoi.value = todayStr;
         document.getElementById('ex-noi_tuan_hoan').value = 'Tiếng tim đều, rõ';
+        const plTuanHoan = document.getElementById('ex-noi_pl_tuan_hoan');
+        if (plTuanHoan) plTuanHoan.value = '1';
         document.getElementById('ex-noi_ho_hap').value = 'Phổi trong, không rales';
+        const plHoHap = document.getElementById('ex-noi_pl_ho_hap');
+        if (plHoHap) plHoHap.value = '1';
         document.getElementById('ex-noi_tieu_hoa').value = 'Bụng mềm, không đau';
+        const plTieuHoa = document.getElementById('ex-noi_pl_tieu_hoa');
+        if (plTieuHoa) plTieuHoa.value = '1';
         document.getElementById('ex-noi_than_tiet_nieu').value = 'Chạm thận (-)';
+        const plThan = document.getElementById('ex-noi_pl_than_tiet_nieu');
+        if (plThan) plThan.value = '1';
         document.getElementById('ex-noi_noi_tiet').value = 'Tuyến giáp không to, bình thường';
+        const plNoiTiet = document.getElementById('ex-noi_pl_noi_tiet');
+        if (plNoiTiet) plNoiTiet.value = '1';
         document.getElementById('ex-noi_co_xuong_khop').value = 'Khớp vận động bình thường';
+        const plKhop = document.getElementById('ex-noi_pl_co_xuong_khop');
+        if (plKhop) plKhop.value = '1';
         document.getElementById('ex-noi_than_kinh').value = 'Tỉnh táo, phản xạ tốt';
+        const plThanKinh = document.getElementById('ex-noi_pl_than_kinh');
+        if (plThanKinh) plThanKinh.value = '1';
         document.getElementById('ex-noi_tam_than').value = 'Bình thường, tiếp xúc tốt';
+        const plTamThan = document.getElementById('ex-noi_pl_tam_than');
+        if (plTamThan) plTamThan.value = '1';
+        const bsNoi = document.getElementById('ex-noi_bac_sy');
+        if (bsNoi && !bsNoi.value) bsNoi.value = savedDoctor || 'BS. Chuyên khoa Nội';
       } else if (currentRoomId === 'ngoai') {
         document.getElementById('ex-ngoai_ket_qua').value = 'Bình thường, không sẹo mổ cũ';
         document.getElementById('ex-ngoai_phan_loai').value = '1';
+        const bsNgoai = document.getElementById('ex-ngoai_bac_sy');
+        if (bsNgoai && !bsNgoai.value) bsNgoai.value = savedDoctor || 'BS. Chuyên khoa Ngoại';
       } else if (currentRoomId === 'da_lieu') {
         document.getElementById('ex-da_lieu_ket_qua').value = 'Bình thường, da sạch';
         document.getElementById('ex-da_lieu_phan_loai').value = '1';
+        const bsDaLieu = document.getElementById('ex-da_lieu_bac_sy');
+        if (bsDaLieu && !bsDaLieu.value) bsDaLieu.value = savedDoctor || 'BS. Chuyên khoa Da liễu';
       } else if (currentRoomId === 'san' && p.gioi_tinh === 2) {
-        document.getElementById('ex-san_phu_khoa_ket_qua').value = 'Bình thường, không viêm nhiễm';
-        document.getElementById('ex-san_phu_khoa_phan_loai').value = '1';
+        if (document.getElementById('ex-san_phu_khoa_ket_qua')) {
+          document.getElementById('ex-san_phu_khoa_ket_qua').value = 'Bình thường, không viêm nhiễm';
+        }
+        if (document.getElementById('ex-san_phu_khoa_phan_loai')) {
+          document.getElementById('ex-san_phu_khoa_phan_loai').value = '1';
+        }
+        const bsSan = document.getElementById('ex-san_phu_khoa_bac_sy');
+        if (bsSan && !bsSan.value) bsSan.value = savedDoctor || 'BS. Sản phụ khoa';
       } else if (currentRoomId === 'cls') {
         // Huyết học
         document.getElementById('ex-cls_hong_cau').value = '4.5';
@@ -811,6 +855,8 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-cls_sieu_am').value = 'Các tạng bình thường';
         document.getElementById('ex-cls_cdha_khac').value = 'Chưa ghi nhận bất thường';
         document.getElementById('ex-cls_xet_nghiem_khac').value = 'Bình thường';
+        const bsCls = document.getElementById('ex-cls_bac_sy');
+        if (bsCls && !bsCls.value) bsCls.value = savedDoctor || 'BS/KTV Cận lâm sàng';
       }
       window.showToast('Đã điền các chỉ số chuẩn bình thường', 'info');
     };

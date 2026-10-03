@@ -111,6 +111,7 @@ function renderConclusionView(container, patientData) {
     <div class="card">
       <div class="card-title">
         <span>📋 Kết Luận & Đánh Giá Phân Loại Sức Khỏe Chung</span>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal-conclusion">Điền Nhanh: Đủ Sức Khỏe (Loại 1)</button>
       </div>
 
       <form id="form-conclusion">
@@ -164,6 +165,25 @@ function renderConclusionView(container, patientData) {
       </form>
     </div>
   `;
+
+  // Gắn sự kiện điền nhanh kết luận
+  const btnFillNormalKl = document.getElementById('btn-fill-normal-conclusion');
+  if (btnFillNormalKl) {
+    btnFillNormalKl.onclick = () => {
+      document.getElementById('kl-phan_loai_suc_khoe').value = '1';
+      document.getElementById('kl-ma_icd10').value = 'Z00.0';
+      if (document.getElementById('kl-ngay_ket_luan') && !document.getElementById('kl-ngay_ket_luan').value) {
+        document.getElementById('kl-ngay_ket_luan').value = todayStr;
+      }
+      document.getElementById('kl-mo_ta_benh_tat').value = 'Hiện tại chưa phát hiện bệnh lý. Đủ sức khỏe làm việc.';
+      document.getElementById('kl-loi_dan_bac_si').value = 'Khám sức khỏe định kỳ hàng năm. Giữ gìn chế độ dinh dưỡng và vận động hợp lý.';
+      const bsKl = document.getElementById('kl-bac_si_ket_luan');
+      if (bsKl && !bsKl.value) bsKl.value = savedDoctor || 'BS. Kết luận KSK';
+      const cskcb = document.getElementById('kl-ma_cskcb');
+      if (cskcb && !cskcb.value) cskcb.value = '79001';
+      window.showToast('Đã điền nhanh kết luận chuẩn (Loại 1)', 'info');
+    };
+  }
 
   // Gắn sự kiện làm mới tiến độ
   const btnRefreshProg = document.getElementById('btn-refresh-conclusion-progress');
