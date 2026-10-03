@@ -48,7 +48,11 @@ function renderReceptionView(container, patientData) {
           </div>
           <div class="form-group">
             <label>Nơi cấp CCCD</label>
-            <input type="text" id="rec-noi_cap_cccd" class="form-control" value="${p.noi_cap_cccd || ''}" placeholder="Cục CS QLHC về TTXH">
+            <select id="rec-noi_cap_cccd" class="form-control">
+              <option value="Cục Cảnh sát QLHC về TTXH" ${(!p.noi_cap_cccd || p.noi_cap_cccd.includes('Cảnh sát') || p.noi_cap_cccd.includes('CS') || p.noi_cap_cccd.includes('QLHC')) ? 'selected' : ''}>Cục Cảnh sát QLHC về TTXH</option>
+              <option value="Bộ Công an" ${(p.noi_cap_cccd === 'Bộ Công an' || p.noi_cap_cccd === 'Bộ công an') ? 'selected' : ''}>Bộ Công an</option>
+              ${(p.noi_cap_cccd && !p.noi_cap_cccd.includes('Cảnh sát') && !p.noi_cap_cccd.includes('CS') && !p.noi_cap_cccd.includes('QLHC') && p.noi_cap_cccd !== 'Bộ Công an' && p.noi_cap_cccd !== 'Bộ công an') ? `<option value="${p.noi_cap_cccd}" selected>${p.noi_cap_cccd}</option>` : ''}
+            </select>
           </div>
         </div>
 
@@ -64,11 +68,30 @@ function renderReceptionView(container, patientData) {
           <div class="form-group">
             <label>Đối tượng KSK</label>
             <select id="rec-doi_tuong_ksk" class="form-control">
-              <option value="64" ${p.doi_tuong_ksk === '64' ? 'selected' : ''}>64 - KSK định kỳ cho người lao động</option>
-              <option value="58" ${p.doi_tuong_ksk === '58' ? 'selected' : ''}>58 - KSK cho đối tượng chính sách</option>
+              <option value="64" ${(!p.doi_tuong_ksk || p.doi_tuong_ksk === '64') ? 'selected' : ''}>64 - KSK định kỳ cho người lao động</option>
+              <option value="100" ${p.doi_tuong_ksk === '100' ? 'selected' : ''}>100 - KSK phân loại sức khỏe để đi học, đi làm việc</option>
+              <option value="96" ${p.doi_tuong_ksk === '96' ? 'selected' : ''}>96 - KSK định kỳ cho lái xe</option>
+              <option value="98" ${p.doi_tuong_ksk === '98' ? 'selected' : ''}>98 - KSK học sinh, sinh viên</option>
               <option value="59" ${p.doi_tuong_ksk === '59' ? 'selected' : ''}>59 - KSK an toàn thực phẩm</option>
               <option value="60" ${p.doi_tuong_ksk === '60' ? 'selected' : ''}>60 - KSK khi đi làm việc ở nước ngoài</option>
-              <option value="61" ${p.doi_tuong_ksk === '61' ? 'selected' : ''}>61 - Khám giám định y khoa</option>
+              <option value="58" ${p.doi_tuong_ksk === '58' ? 'selected' : ''}>58 - KSK cho đối tượng chính sách</option>
+              <option value="66" ${p.doi_tuong_ksk === '66' ? 'selected' : ''}>66 - KSK định kỳ cho cán bộ</option>
+              <option value="99" ${p.doi_tuong_ksk === '99' ? 'selected' : ''}>99 - KSK định kỳ miễn phí (từ 18 tuổi trở lên)</option>
+              <option value="92" ${p.doi_tuong_ksk === '92' ? 'selected' : ''}>92 - KSK người cao tuổi (trên 60 tuổi)</option>
+              <option value="95" ${p.doi_tuong_ksk === '95' ? 'selected' : ''}>95 - KSK định kỳ cho thuyền viên</option>
+              <option value="97" ${p.doi_tuong_ksk === '97' ? 'selected' : ''}>97 - KSK nghĩa vụ quân sự, công an</option>
+              <option value="102" ${p.doi_tuong_ksk === '102' ? 'selected' : ''}>102 - KSK theo yêu cầu nghề nghiệp đặc thù</option>
+              <option value="103" ${p.doi_tuong_ksk === '103' ? 'selected' : ''}>103 - KSK phát hiện bệnh nghề nghiệp</option>
+              <option value="104" ${p.doi_tuong_ksk === '104' ? 'selected' : ''}>104 - KSK theo yêu cầu</option>
+              <option value="61" ${p.doi_tuong_ksk === '61' ? 'selected' : ''}>61 - Khám giám định y khoa, pháp y</option>
+              <option value="62" ${p.doi_tuong_ksk === '62' ? 'selected' : ''}>62 - Khám cấp giấy chứng thương</option>
+              <option value="63" ${p.doi_tuong_ksk === '63' ? 'selected' : ''}>63 - KSK cho người có công với cách mạng</option>
+              <option value="65" ${p.doi_tuong_ksk === '65' ? 'selected' : ''}>65 - KSK điều khiển phương tiện đường sắt</option>
+              <option value="91" ${p.doi_tuong_ksk === '91' ? 'selected' : ''}>91 - KSK tiền hôn nhân</option>
+              <option value="93" ${p.doi_tuong_ksk === '93' ? 'selected' : ''}>93 - KSK định kỳ trẻ em (dưới 06 tuổi)</option>
+              <option value="94" ${p.doi_tuong_ksk === '94' ? 'selected' : ''}>94 - KSK bà mẹ</option>
+              <option value="101" ${p.doi_tuong_ksk === '101' ? 'selected' : ''}>101 - Khám sàng lọc bệnh không lây nhiễm</option>
+              <option value="105" ${p.doi_tuong_ksk === '105' ? 'selected' : ''}>105 - Hình thức khám sức khỏe khác</option>
             </select>
           </div>
         </div>
