@@ -105,25 +105,99 @@ async function seedLookups(force = false) {
     }
   }
 
-  // 3. Seed ICD-10
+  // 3. Seed ICD-10 (Các mã thường gặp nhất trong Khám sức khỏe định kỳ & Danh mục Bộ Y Tế)
   const commonIcd10 = [
-    { code: 'Z00.0', name: 'Z00.0 - Khám sức khỏe định kỳ (Bình thường)' },
+    // Khám sức khỏe & Thể lực chung
+    { code: 'Z00.0', name: 'Z00.0 - Khám sức khỏe định kỳ (Đủ sức khỏe / Bình thường)' },
     { code: 'Z01.0', name: 'Z01.0 - Khám mắt và thị lực' },
     { code: 'Z01.1', name: 'Z01.1 - Khám tai và thính lực' },
     { code: 'Z01.2', name: 'Z01.2 - Khám răng hàm mặt' },
-    { code: 'I10', name: 'I10 - Bệnh tăng huyết áp vô căn (nguyên phát)' },
-    { code: 'E11', name: 'E11 - Bệnh đái tháo đường týp 2' },
-    { code: 'E78', name: 'E78 - Rối loạn chuyển hóa lipoprotein và tăng lipid máu' },
-    { code: 'H52.1', name: 'H52.1 - Cận thị' },
+    { code: 'Z02.1', name: 'Z02.1 - Khám tuyển dụng / xin việc' },
+    { code: 'Z02.4', name: 'Z02.4 - Khám sức khỏe lái xe' },
+
+    // Mắt & Khúc xạ
+    { code: 'H52.1', name: 'H52.1 - Cận thị (hai mắt / một mắt)' },
     { code: 'H52.2', name: 'H52.2 - Loạn thị' },
     { code: 'H52.0', name: 'H52.0 - Viễn thị' },
+    { code: 'H52.4', name: 'H52.4 - Lão thị' },
+    { code: 'H10', name: 'H10 - Viêm kết mạc' },
+    { code: 'H25', name: 'H25 - Đục thể thủy tinh tuổi già' },
+    { code: 'H00', name: 'H00 - Lẹo và chắp' },
+
+    // Tim mạch & Huyết áp
+    { code: 'I10', name: 'I10 - Bệnh tăng huyết áp vô căn (nguyên phát)' },
+    { code: 'I15', name: 'I15 - Tăng huyết áp thứ phát' },
+    { code: 'I20', name: 'I20 - Cơn đau thắt ngực' },
+    { code: 'I25', name: 'I25 - Bệnh tim thiếu máu cục bộ mạn tính' },
+    { code: 'I49', name: 'I49 - Loạn nhịp tim' },
+    { code: 'I83', name: 'I83 - Giãn tĩnh mạch chi dưới' },
+    { code: 'I95', name: 'I95 - Tụt huyết áp / Huyết áp thấp' },
+
+    // Nội tiết & Chuyển hóa
+    { code: 'E11', name: 'E11 - Bệnh đái tháo đường týp 2' },
+    { code: 'E10', name: 'E10 - Bệnh đái tháo đường týp 1' },
+    { code: 'E78', name: 'E78 - Rối loạn chuyển hóa lipoprotein và tăng lipid máu (Mỡ máu)' },
+    { code: 'E78.0', name: 'E78.0 - Tăng cholesterol máu thuần túy' },
+    { code: 'E78.1', name: 'E78.1 - Tăng triglycerid máu thuần túy' },
+    { code: 'E78.2', name: 'E78.2 - Tăng lipid máu hỗn hợp' },
+    { code: 'E66', name: 'E66 - Thừa cân / Béo phì' },
+    { code: 'E04', name: 'E04 - Bướu giáp nhân lành tính / Đơn thuần' },
+    { code: 'E05', name: 'E05 - Cường giáp / Nhiễm độc giáp' },
+    { code: 'M10', name: 'M10 - Bệnh Gút (Gout)' },
+    { code: 'E79', name: 'E79 - Rối loạn chuyển hóa purin / Tăng acid uric' },
+
+    // Tiêu hóa & Gan mật
     { code: 'K29', name: 'K29 - Viêm dạ dày và tá tràng' },
-    { code: 'K02', name: 'K02 - Sâu răng' },
-    { code: 'K05', name: 'K05 - Viêm lợi và bệnh nha chu' },
+    { code: 'K21', name: 'K21 - Bệnh trào ngược dạ dày - thực quản (GERD)' },
+    { code: 'K76.0', name: 'K76.0 - Gan thoái hóa mỡ (Gan nhiễm mỡ)' },
+    { code: 'B18.1', name: 'B18.1 - Viêm gan virus B mạn' },
+    { code: 'B18.2', name: 'B18.2 - Viêm gan virus C mạn' },
+    { code: 'K80', name: 'K80 - Sỏi mật' },
+    { code: 'K82', name: 'K82 - Polyp túi mật / Bệnh túi mật khác' },
+    { code: 'K64', name: 'K64 - Bệnh trĩ (nội / ngoại)' },
+
+    // Tai Mũi Họng & Hô hấp
     { code: 'J00', name: 'J00 - Viêm mũi họng cấp' },
     { code: 'J30', name: 'J30 - Viêm mũi vận mạch và dị ứng' },
-    { code: 'B18.1', name: 'B18.1 - Viêm gan virus B mạn' },
-    { code: 'K76.0', name: 'K76.0 - Gan thoái hóa mỡ' }
+    { code: 'J31', name: 'J31 - Viêm mũi / Viêm xoang mạn' },
+    { code: 'J32', name: 'J32 - Viêm xoang mạn tính' },
+    { code: 'J35', name: 'J35 - Viêm amidan mạn tính' },
+    { code: 'J45', name: 'J45 - Hen phế quản (Suyễn)' },
+    { code: 'J20', name: 'J20 - Viêm phế quản cấp' },
+    { code: 'H60', name: 'H60 - Viêm tai ngoài' },
+    { code: 'H65', name: 'H65 - Viêm tai giữa' },
+    { code: 'H90', name: 'H90 - Giảm sức nghe / Điếc dẫn truyền và tiếp nhận' },
+
+    // Răng Hàm Mặt
+    { code: 'K02', name: 'K02 - Sâu răng' },
+    { code: 'K05', name: 'K05 - Viêm lợi và bệnh nha chu (Viêm nướu)' },
+    { code: 'K03', name: 'K03 - Mòn men răng / Tổn thương ngà răng' },
+    { code: 'K07', name: 'K07 - Lệch lạc khớp cắn / Răng khôn mọc lệch' },
+
+    // Cơ Xương Khớp & Cột sống
+    { code: 'M47', name: 'M47 - Thoái hóa cột sống (cổ / lưng)' },
+    { code: 'M54', name: 'M54 - Đau lưng / Đau thần kinh tọa' },
+    { code: 'M17', name: 'M17 - Thoái hóa khớp gối' },
+    { code: 'M19', name: 'M19 - Thoái hóa khớp khác' },
+    { code: 'M41', name: 'M41 - Vẹo cột sống' },
+
+    // Tiết niệu - Sinh dục - Phụ khoa
+    { code: 'N20', name: 'N20 - Sỏi thận và sỏi niệu quản' },
+    { code: 'N28.1', name: 'N28.1 - Nang thận' },
+    { code: 'N40', name: 'N40 - Phì đại lành tính tuyến tiền liệt' },
+    { code: 'N72', name: 'N72 - Viêm cổ tử cung' },
+    { code: 'N76', name: 'N76 - Viêm âm đạo / âm hộ' },
+    { code: 'D25', name: 'D25 - U xơ tử cung' },
+    { code: 'D27', name: 'D27 - U buồng trứng lành tính / Nang buồng trứng' },
+
+    // Da liễu & Khác
+    { code: 'L20', name: 'L20 - Viêm da cơ địa / Eczema' },
+    { code: 'L70', name: 'L70 - Mụn trứng cá' },
+    { code: 'B35', name: 'B35 - Bệnh nấm da (hắc lào, lang ben)' },
+    { code: 'L50', name: 'L50 - Mày đay' },
+    { code: 'D50', name: 'D50 - Thiếu máu thiếu sắt' },
+    { code: 'R73', name: 'R73 - Tăng glucose máu (Tiền đái tháo đường)' },
+    { code: 'R74', name: 'R74 - Tăng men gan (ALT/AST)' }
   ];
 
   for (const item of commonIcd10) {

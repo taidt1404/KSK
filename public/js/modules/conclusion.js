@@ -139,7 +139,8 @@ function renderConclusionView(container, patientData) {
           </div>
           <div class="form-group">
             <label>Mã bệnh theo ICD-10 <span class="req">*</span></label>
-            <input type="text" id="kl-ma_icd10" class="form-control" value="${ketLuan.ma_icd10 || 'Z00.0'}" placeholder="Ví dụ: Z00.0, I10, K02..." required>
+            <input type="text" id="kl-ma_icd10" list="list-icd10" class="form-control" value="${ketLuan.ma_icd10 || 'Z00.0'}" placeholder="Chọn hoặc gõ (VD: Z00.0, H52.1, cận thị...)" autocomplete="off" required>
+            <datalist id="list-icd10"></datalist>
           </div>
           <div class="form-group">
             <label>Ngày kết luận <span class="req">*</span></label>
@@ -217,13 +218,51 @@ function renderConclusionView(container, patientData) {
     };
   }
 
+  // Nạp danh mục gợi ý ICD-10
+  loadIcd10Options();
+
+  const icdInput = document.getElementById('kl-ma_icd10');
+  if (icdInput) {
+    const handleIcdSelect = () => {
+      const val = icdInput.value.trim();
+      const match = val.match(/^([A-Z][0-9]{2}(?:\.[0-9]{1,2})?)\s*[-:]\s*(.+)$/i);
+      if (match) {
+        const code = match[1].toUpperCase();
+        const desc = match[2].trim();
+        icdInput.value = code;
+        const descInput = document.getElementById('kl-mo_ta_benh_tat');
+        if (descInput) {
+          if (!descInput.value || descInput.value.includes('Hiện tại chưa phát hiện bệnh lý')) {
+            descInput.value = code === 'Z00.0' ? 'Hiện tại chưa phát hiện bệnh lý. Đủ sức khỏe làm việc.' : desc;
+          }
+        }
+        const plInput = document.getElementById('kl-phan_loai_suc_khoe');
+        if (plInput && plInput.value === '1' && code !== 'Z00.0') {
+          plInput.value = '2';
+        }
+      }
+    };
+    icdInput.addEventListener('change', handleIcdSelect);
+    icdInput.addEventListener('input', () => {
+      if (icdInput.value.includes(' - ')) {
+        handleIcdSelect();
+      }
+    });
+  }
+
   // Gắn sự kiện lưu kết luận
   const form = document.getElementById('form-conclusion');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    let maIcd10 = document.getElementById('kl-ma_icd10').value.trim();
+    const codeMatch = maIcd10.match(/^([A-Z][0-9]{2}(?:\.[0-9]{1,2})?)/i);
+    if (codeMatch) {
+      maIcd10 = codeMatch[1].toUpperCase();
+    }
+
     const payload = {
       phan_loai_suc_khoe: document.getElementById('kl-phan_loai_suc_khoe').value,
-      ma_icd10: document.getElementById('kl-ma_icd10').value,
+      ma_icd10: maIcd10,
       ngay_ket_luan: document.getElementById('kl-ngay_ket_luan').value,
       mo_ta_benh_tat: document.getElementById('kl-mo_ta_benh_tat').value,
       loi_dan_bac_si: document.getElementById('kl-loi_dan_bac_si').value,
@@ -255,6 +294,29 @@ function renderConclusionView(container, patientData) {
       window.showToast('Lỗi mạng: ' + err.message, 'error');
     }
   });
+}
+
+let cachedIcd10Data = null;
+async function loadIcd10Options() {
+  const datalist = document.getElementById('list-icd10');
+  if (!datalist) return;
+  try {
+    if (!cachedIcd10Data) {
+      const res = await fetch('/api/lookups?category=ICD10');
+      const data = await res.json();
+      if (data.success && data.data) {
+        cachedIcd10Data = data.data;
+      }
+    }
+    if (cachedIcd10Data && datalist) {
+      datalist.innerHTML = cachedIcd10Data.map(item => {
+        const cleanDesc = item.name.replace(/^[A-Z0-9.]+\s*-\s*/, '');
+        return `<option value="${item.code} - ${cleanDesc}">${item.name}</option>`;
+      }).join('');
+    }
+  } catch (err) {
+    console.error('Lỗi tải danh mục ICD-10:', err);
+  }
 }
 
 window.ConclusionModule = {
