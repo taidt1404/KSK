@@ -200,14 +200,35 @@ async function seedLookups(force = false) {
     { code: 'R74', name: 'R74 - Tăng men gan (ALT/AST)' }
   ];
 
-  for (const item of commonIcd10) {
-    await run(
-      'INSERT INTO lookup_data (category, code, name) VALUES (?, ?, ?)',
-      ['ICD10', item.code, item.name]
-    );
+  const icdJsonPath = path.join(__dirname, '../../data/icd10.json');
+  let icdList = commonIcd10;
+  if (fs.existsSync(icdJsonPath)) {
+    try {
+      icdList = JSON.parse(fs.readFileSync(icdJsonPath, 'utf8'));
+    } catch (e) {
+      console.error('Lỗi đọc icd10.json, sử dụng danh mục dự phòng:', e);
+    }
   }
 
-  console.log('✅ Đã nạp thành công đầy đủ danh mục địa phương và KSK.');
+  const db = getDb();
+  await new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run('BEGIN TRANSACTION;');
+      const stmt = db.prepare('INSERT INTO lookup_data (category, code, name) VALUES (?, ?, ?)');
+      for (const item of icdList) {
+        stmt.run('ICD10', item.code, item.name);
+      }
+      stmt.finalize((err) => {
+        if (err) return reject(err);
+      });
+      db.run('COMMIT;', (commitErr) => {
+        if (commitErr) return reject(commitErr);
+        resolve();
+      });
+    });
+  });
+
+  console.log(`✅ Đã nạp thành công đầy đủ danh mục địa phương và ${icdList.length} mã ICD-10.`);
 }
 
 module.exports = { seedLookups };

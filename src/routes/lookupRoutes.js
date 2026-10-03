@@ -59,12 +59,51 @@ router.get('/', async (req, res) => {
       params.push(category);
     }
 
-    if (q) {
-      sql += ' AND (name LIKE ? OR code LIKE ?)';
-      params.push(`%${q}%`, `%${q}%`);
+    if (category === 'ICD10') {
+      if (q && q.trim()) {
+        const term = q.trim();
+        sql += ' AND (code LIKE ? OR name LIKE ?)';
+        params.push(`%${term}%`, `%${term}%`);
+        sql += ` ORDER BY 
+          CASE 
+            WHEN UPPER(code) = UPPER(?) THEN 1
+            WHEN UPPER(code) LIKE UPPER(?) THEN 2
+            WHEN code LIKE 'Z%' THEN 3
+            WHEN UPPER(name) LIKE UPPER(?) THEN 4
+            ELSE 5
+          END ASC, code ASC LIMIT 100`;
+        params.push(term, `${term}%`, `%${term}%`);
+      } else {
+        // Mặc định ưu tiên các mã Khám sức khỏe & các bệnh thường gặp
+        sql += ` ORDER BY 
+          CASE 
+            WHEN code = 'Z00.0' THEN 1
+            WHEN code = 'Z10' THEN 2
+            WHEN code = 'Z02.1' THEN 3
+            WHEN code = 'Z02.4' THEN 4
+            WHEN code = 'Z02.3' THEN 5
+            WHEN code = 'Z00.1' THEN 6
+            WHEN code = 'Z00.129' THEN 7
+            WHEN code LIKE 'Z02%' THEN 8
+            WHEN code LIKE 'Z00%' THEN 9
+            WHEN code LIKE 'Z01%' THEN 10
+            WHEN code LIKE 'H52%' THEN 11
+            WHEN code LIKE 'I10%' THEN 12
+            WHEN code LIKE 'E11%' THEN 13
+            WHEN code LIKE 'E78%' THEN 14
+            WHEN code LIKE 'K02%' THEN 15
+            WHEN code LIKE 'Z%' THEN 16
+            ELSE 17
+          END ASC, code ASC LIMIT 100`;
+      }
+    } else {
+      if (q && q.trim()) {
+        sql += ' AND (name LIKE ? OR code LIKE ?)';
+        params.push(`%${q.trim()}%`, `%${q.trim()}%`);
+      }
+      sql += ' ORDER BY id ASC LIMIT 200';
     }
 
-    sql += ' ORDER BY id ASC LIMIT 200';
     const rows = await all(sql, params);
     res.json({ success: true, data: rows });
   } catch (err) {
