@@ -235,17 +235,17 @@ function renderClinicExamView(container, patientData, currentRoomId) {
       <div class="card">
         <div class="card-title">
           <span>🦷 Kết Quả Khám Răng - Hàm - Mặt</span>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal">Điền Nhanh: Răng Tốt</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal">Điền Nhanh: Bình Thường</button>
         </div>
         <form id="form-exam">
           <div class="form-grid-2">
             <div class="form-group">
               <label>Khám Hàm trên</label>
-              <input type="text" id="ex-rhm_ham_tren" class="form-control" value="${lamSang.rhm_ham_tren || ''}" placeholder="Đủ răng / Bình thường">
+              <input type="text" id="ex-rhm_ham_tren" class="form-control" value="${lamSang.rhm_ham_tren || ''}" placeholder="Bình thường">
             </div>
             <div class="form-group">
               <label>Khám Hàm dưới</label>
-              <input type="text" id="ex-rhm_ham_duoi" class="form-control" value="${lamSang.rhm_ham_duoi || ''}" placeholder="Đủ răng / Bình thường">
+              <input type="text" id="ex-rhm_ham_duoi" class="form-control" value="${lamSang.rhm_ham_duoi || ''}" placeholder="Bình thường">
             </div>
           </div>
 
@@ -371,7 +371,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
               <label>5. Khám Nội tiết</label>
-              <input type="text" id="ex-noi_noi_tiet" class="form-control" value="${lamSang.noi_noi_tiet || 'Tuyến giáp không to, bình thường'}">
+              <input type="text" id="ex-noi_noi_tiet" class="form-control" value="${lamSang.noi_noi_tiet || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Nội tiết</label>
@@ -388,7 +388,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
               <label>6. Khám Cơ xương khớp</label>
-              <input type="text" id="ex-noi_co_xuong_khop" class="form-control" value="${lamSang.noi_co_xuong_khop || 'Khớp hoạt động bình thường'}">
+              <input type="text" id="ex-noi_co_xuong_khop" class="form-control" value="${lamSang.noi_co_xuong_khop || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Cơ xương khớp</label>
@@ -422,7 +422,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
               <label>8. Khám Tâm thần</label>
-              <input type="text" id="ex-noi_tam_than" class="form-control" value="${lamSang.noi_tam_than || 'Bình thường, tiếp xúc tốt'}">
+              <input type="text" id="ex-noi_tam_than" class="form-control" value="${lamSang.noi_tam_than || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Tâm thần</label>
@@ -457,7 +457,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         <form id="form-exam">
           <div class="form-group">
             <label>Kết quả khám Ngoại khoa</label>
-            <input type="text" id="ex-ngoai_ket_qua" class="form-control" value="${lamSang.ngoai_ket_qua || 'Bình thường, không sẹo mổ cũ'}">
+            <input type="text" id="ex-ngoai_ket_qua" class="form-control" value="${lamSang.ngoai_ket_qua || 'Bình thường'}">
           </div>
           <div class="form-grid-2" style="margin-top: 16px;">
             <div class="form-group">
@@ -496,7 +496,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         <form id="form-exam">
           <div class="form-group">
             <label>Kết quả khám Da liễu</label>
-            <input type="text" id="ex-da_lieu_ket_qua" class="form-control" value="${lamSang.da_lieu_ket_qua || 'Bình thường, không sang thương da'}">
+            <input type="text" id="ex-da_lieu_ket_qua" class="form-control" value="${lamSang.da_lieu_ket_qua || 'Bình thường'}">
           </div>
           <div class="form-grid-2" style="margin-top: 16px;">
             <div class="form-group">
@@ -544,7 +544,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <form id="form-exam">
             <div class="form-group">
               <label>Kết quả khám Sản phụ khoa</label>
-              <input type="text" id="ex-san_phu_khoa_ket_qua" class="form-control" value="${lamSang.san_phu_khoa_ket_qua || 'Bình thường, không viêm nhiễm'}">
+              <input type="text" id="ex-san_phu_khoa_ket_qua" class="form-control" value="${lamSang.san_phu_khoa_ket_qua || 'Bình thường'}">
             </div>
             <div class="form-grid-2" style="margin-top: 16px;">
               <div class="form-group">
@@ -788,8 +788,8 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         const bsTmh = document.getElementById('ex-tmh_bac_sy');
         if (bsTmh && !bsTmh.value) bsTmh.value = savedDoctor || 'BS. Chuyên khoa TMH';
       } else if (currentRoomId === 'rhm') {
-        document.getElementById('ex-rhm_ham_tren').value = 'Đủ răng, bình thường';
-        document.getElementById('ex-rhm_ham_duoi').value = 'Đủ răng, bình thường';
+        document.getElementById('ex-rhm_ham_tren').value = 'Bình thường';
+        document.getElementById('ex-rhm_ham_duoi').value = 'Bình thường';
         document.getElementById('ex-rhm_benh').value = 'Không có';
         document.getElementById('ex-rhm_phan_loai').value = '1';
         const bsRhm = document.getElementById('ex-rhm_bac_sy');
@@ -809,33 +809,33 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-noi_than_tiet_nieu').value = 'Chạm thận (-)';
         const plThan = document.getElementById('ex-noi_pl_than_tiet_nieu');
         if (plThan) plThan.value = '1';
-        document.getElementById('ex-noi_noi_tiet').value = 'Tuyến giáp không to, bình thường';
+        document.getElementById('ex-noi_noi_tiet').value = 'Bình thường';
         const plNoiTiet = document.getElementById('ex-noi_pl_noi_tiet');
         if (plNoiTiet) plNoiTiet.value = '1';
-        document.getElementById('ex-noi_co_xuong_khop').value = 'Khớp vận động bình thường';
+        document.getElementById('ex-noi_co_xuong_khop').value = 'Bình thường';
         const plKhop = document.getElementById('ex-noi_pl_co_xuong_khop');
         if (plKhop) plKhop.value = '1';
         document.getElementById('ex-noi_than_kinh').value = 'Tỉnh táo, phản xạ tốt';
         const plThanKinh = document.getElementById('ex-noi_pl_than_kinh');
         if (plThanKinh) plThanKinh.value = '1';
-        document.getElementById('ex-noi_tam_than').value = 'Bình thường, tiếp xúc tốt';
+        document.getElementById('ex-noi_tam_than').value = 'Bình thường';
         const plTamThan = document.getElementById('ex-noi_pl_tam_than');
         if (plTamThan) plTamThan.value = '1';
         const bsNoi = document.getElementById('ex-noi_bac_sy');
         if (bsNoi && !bsNoi.value) bsNoi.value = savedDoctor || 'BS. Chuyên khoa Nội';
       } else if (currentRoomId === 'ngoai') {
-        document.getElementById('ex-ngoai_ket_qua').value = 'Bình thường, không sẹo mổ cũ';
+        document.getElementById('ex-ngoai_ket_qua').value = 'Bình thường';
         document.getElementById('ex-ngoai_phan_loai').value = '1';
         const bsNgoai = document.getElementById('ex-ngoai_bac_sy');
         if (bsNgoai && !bsNgoai.value) bsNgoai.value = savedDoctor || 'BS. Chuyên khoa Ngoại';
       } else if (currentRoomId === 'da_lieu') {
-        document.getElementById('ex-da_lieu_ket_qua').value = 'Bình thường, da sạch';
+        document.getElementById('ex-da_lieu_ket_qua').value = 'Bình thường';
         document.getElementById('ex-da_lieu_phan_loai').value = '1';
         const bsDaLieu = document.getElementById('ex-da_lieu_bac_sy');
         if (bsDaLieu && !bsDaLieu.value) bsDaLieu.value = savedDoctor || 'BS. Chuyên khoa Da liễu';
       } else if (currentRoomId === 'san' && p.gioi_tinh === 2) {
         if (document.getElementById('ex-san_phu_khoa_ket_qua')) {
-          document.getElementById('ex-san_phu_khoa_ket_qua').value = 'Bình thường, không viêm nhiễm';
+          document.getElementById('ex-san_phu_khoa_ket_qua').value = 'Bình thường';
         }
         if (document.getElementById('ex-san_phu_khoa_phan_loai')) {
           document.getElementById('ex-san_phu_khoa_phan_loai').value = '1';
@@ -877,9 +877,9 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-cls_nuoc_tieu_bach_cau').value = 'Âm tính';
         // CĐHA & Khác
         document.getElementById('ex-cls_dien_tim').value = 'Nhịp xoang đều';
-        document.getElementById('ex-cls_xquang').value = 'Tim phổi bình thường';
-        document.getElementById('ex-cls_sieu_am').value = 'Các tạng bình thường';
-        document.getElementById('ex-cls_cdha_khac').value = 'Chưa ghi nhận bất thường';
+        document.getElementById('ex-cls_xquang').value = 'Bình thường';
+        document.getElementById('ex-cls_sieu_am').value = 'Bình thường';
+        document.getElementById('ex-cls_cdha_khac').value = 'Bình thường';
         document.getElementById('ex-cls_xet_nghiem_khac').value = 'Bình thường';
         const bsCls = document.getElementById('ex-cls_bac_sy');
         if (bsCls && !bsCls.value) bsCls.value = savedDoctor || 'BS/KTV Cận lâm sàng';
