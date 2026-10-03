@@ -207,7 +207,7 @@ function renderConclusionView(container, patientData) {
           await window.App.refreshCurrentPatient();
         }
         if (window.App && window.App.selectNextPatient) {
-          window.App.selectNextPatient();
+          await window.App.selectNextPatient();
         }
       } else {
         window.showToast(data.message || 'Lỗi lưu kết luận', 'error');

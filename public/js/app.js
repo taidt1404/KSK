@@ -350,12 +350,32 @@ function clearSelectedPatient() {
   renderWorkspaceContent();
 }
 
-// Tự động chuyển ca tiếp theo sau khi lưu
-function selectNextPatient() {
-  if (!currentPatientList || currentPatientList.length === 0) return;
-  const currentIndex = currentPatientList.findIndex((p) => p.id === selectedPatientId);
-  if (currentIndex >= 0 && currentIndex + 1 < currentPatientList.length) {
-    selectPatient(currentPatientList[currentIndex + 1].id);
+// Tự động chuyển ca tiếp theo sau khi lưu (Chỉ chuyển tới bệnh nhân CHƯA KHÁM phòng này)
+async function selectNextPatient() {
+  const currentRoom = window.RoomManager.getCurrentRoom();
+  if (currentRoom === 'tiep_don') return;
+
+  // Cập nhật lại danh sách bệnh nhân để lấy trạng thái mới nhất vừa lưu
+  await loadPatientList(false);
+
+  const allList = lastFetchedAllPatients.length > 0 ? lastFetchedAllPatients : currentPatientList;
+  if (!allList || allList.length === 0) return;
+
+  const currentIndex = allList.findIndex((p) => p.id === selectedPatientId);
+
+  // 1. Tìm bệnh nhân tiếp theo phía sau người hiện tại mà CHƯA khám phòng này
+  let nextPatient = allList.slice(currentIndex + 1).find((p) => !isPatientDoneForRoom(p, currentRoom));
+
+  // 2. Nếu từ người hiện tại về cuối danh sách không còn ai, tìm vòng lại từ đầu danh sách
+  if (!nextPatient && currentIndex > 0) {
+    nextPatient = allList.slice(0, currentIndex).find((p) => !isPatientDoneForRoom(p, currentRoom));
+  }
+
+  if (nextPatient) {
+    await selectPatient(nextPatient.id);
+  } else {
+    // Không còn bệnh nhân nào đang chờ khám ở phòng này
+    window.showToast('🎉 Đã hoàn thành khám cho tất cả bệnh nhân trong phòng này!', 'info');
   }
 }
 
