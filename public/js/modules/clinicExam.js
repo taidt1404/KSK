@@ -308,9 +308,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Tuần hoàn</label>
               <select id="ex-noi_pl_tuan_hoan" class="form-control">
-                <option value="1" ${lamSang.noi_pl_tuan_hoan === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_tuan_hoan === 2 ? 'selected' : ''}>2 - Loại 2</option>
-                <option value="3" ${lamSang.noi_pl_tuan_hoan === 3 ? 'selected' : ''}>3 - Loại 3</option>
+                <option value="1" ${lamSang.noi_pl_tuan_hoan === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_tuan_hoan === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_tuan_hoan === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_tuan_hoan === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_tuan_hoan === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -323,9 +325,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Hô hấp</label>
               <select id="ex-noi_pl_ho_hap" class="form-control">
-                <option value="1" ${lamSang.noi_pl_ho_hap === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_ho_hap === 2 ? 'selected' : ''}>2 - Loại 2</option>
-                <option value="3" ${lamSang.noi_pl_ho_hap === 3 ? 'selected' : ''}>3 - Loại 3</option>
+                <option value="1" ${lamSang.noi_pl_ho_hap === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_ho_hap === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_ho_hap === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_ho_hap === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_ho_hap === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -338,9 +342,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Tiêu hóa</label>
               <select id="ex-noi_pl_tieu_hoa" class="form-control">
-                <option value="1" ${lamSang.noi_pl_tieu_hoa === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_tieu_hoa === 2 ? 'selected' : ''}>2 - Loại 2</option>
-                <option value="3" ${lamSang.noi_pl_tieu_hoa === 3 ? 'selected' : ''}>3 - Loại 3</option>
+                <option value="1" ${lamSang.noi_pl_tieu_hoa === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_tieu_hoa === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_tieu_hoa === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_tieu_hoa === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_tieu_hoa === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -353,8 +359,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Thận, Tiết niệu</label>
               <select id="ex-noi_pl_than_tiet_nieu" class="form-control">
-                <option value="1" ${lamSang.noi_pl_than_tiet_nieu === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_than_tiet_nieu === 2 ? 'selected' : ''}>2 - Loại 2</option>
+                <option value="1" ${lamSang.noi_pl_than_tiet_nieu === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_than_tiet_nieu === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_than_tiet_nieu === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_than_tiet_nieu === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_than_tiet_nieu === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -367,9 +376,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Nội tiết</label>
               <select id="ex-noi_pl_noi_tiet" class="form-control">
-                <option value="1" ${lamSang.noi_pl_noi_tiet === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_noi_tiet === 2 ? 'selected' : ''}>2 - Loại 2</option>
-                <option value="3" ${lamSang.noi_pl_noi_tiet === 3 ? 'selected' : ''}>3 - Loại 3</option>
+                <option value="1" ${lamSang.noi_pl_noi_tiet === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_noi_tiet === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_noi_tiet === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_noi_tiet === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_noi_tiet === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -382,8 +393,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Cơ xương khớp</label>
               <select id="ex-noi_pl_co_xuong_khop" class="form-control">
-                <option value="1" ${lamSang.noi_pl_co_xuong_khop === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_co_xuong_khop === 2 ? 'selected' : ''}>2 - Loại 2</option>
+                <option value="1" ${lamSang.noi_pl_co_xuong_khop === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_co_xuong_khop === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_co_xuong_khop === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_co_xuong_khop === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_co_xuong_khop === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -396,8 +410,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Thần kinh</label>
               <select id="ex-noi_pl_than_kinh" class="form-control">
-                <option value="1" ${lamSang.noi_pl_than_kinh === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_than_kinh === 2 ? 'selected' : ''}>2 - Loại 2</option>
+                <option value="1" ${lamSang.noi_pl_than_kinh === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_than_kinh === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_than_kinh === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_than_kinh === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_than_kinh === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -410,8 +427,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại Tâm thần</label>
               <select id="ex-noi_pl_tam_than" class="form-control">
-                <option value="1" ${lamSang.noi_pl_tam_than === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.noi_pl_tam_than === 2 ? 'selected' : ''}>2 - Loại 2</option>
+                <option value="1" ${lamSang.noi_pl_tam_than === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.noi_pl_tam_than === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.noi_pl_tam_than === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.noi_pl_tam_than === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.noi_pl_tam_than === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
           </div>
@@ -443,9 +463,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại</label>
               <select id="ex-ngoai_phan_loai" class="form-control">
-                <option value="1" ${lamSang.ngoai_phan_loai === 1 ? 'selected' : ''}>1 - Loại 1 (Tốt)</option>
-                <option value="2" ${lamSang.ngoai_phan_loai === 2 ? 'selected' : ''}>2 - Loại 2</option>
-                <option value="3" ${lamSang.ngoai_phan_loai === 3 ? 'selected' : ''}>3 - Loại 3</option>
+                <option value="1" ${lamSang.ngoai_phan_loai === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.ngoai_phan_loai === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.ngoai_phan_loai === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.ngoai_phan_loai === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.ngoai_phan_loai === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
             <div class="form-group">
@@ -480,9 +502,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             <div class="form-group">
               <label>Phân loại</label>
               <select id="ex-da_lieu_phan_loai" class="form-control">
-                <option value="1" ${lamSang.da_lieu_phan_loai === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                <option value="2" ${lamSang.da_lieu_phan_loai === 2 ? 'selected' : ''}>2 - Loại 2</option>
-                <option value="3" ${lamSang.da_lieu_phan_loai === 3 ? 'selected' : ''}>3 - Loại 3</option>
+                <option value="1" ${lamSang.da_lieu_phan_loai === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                <option value="2" ${lamSang.da_lieu_phan_loai === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                <option value="3" ${lamSang.da_lieu_phan_loai === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                <option value="4" ${lamSang.da_lieu_phan_loai === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                <option value="5" ${lamSang.da_lieu_phan_loai === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
               </select>
             </div>
             <div class="form-group">
@@ -514,7 +538,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
       formHtml = `
         <div class="card">
           <div class="card-title">
-            <span>🌸 Kết Quả Khám Sản Phụ Khoa (Nữ)</span>
+            <span>🌸 Kết Quả Khám Sản PhỤ Khoa (Nữ)</span>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal">Điền Nhanh: Bình Thường</button>
           </div>
           <form id="form-exam">
@@ -526,9 +550,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
               <div class="form-group">
                 <label>Phân loại</label>
                 <select id="ex-san_phu_khoa_phan_loai" class="form-control">
-                  <option value="1" ${lamSang.san_phu_khoa_phan_loai === 1 ? 'selected' : ''}>1 - Loại 1</option>
-                  <option value="2" ${lamSang.san_phu_khoa_phan_loai === 2 ? 'selected' : ''}>2 - Loại 2</option>
-                  <option value="3" ${lamSang.san_phu_khoa_phan_loai === 3 ? 'selected' : ''}>3 - Loại 3</option>
+                  <option value="1" ${lamSang.san_phu_khoa_phan_loai === 1 ? 'selected' : ''}>1 - Loại 1 (Rất khỏe)</option>
+                  <option value="2" ${lamSang.san_phu_khoa_phan_loai === 2 ? 'selected' : ''}>2 - Loại 2 (Khỏe)</option>
+                  <option value="3" ${lamSang.san_phu_khoa_phan_loai === 3 ? 'selected' : ''}>3 - Loại 3 (Trung bình)</option>
+                  <option value="4" ${lamSang.san_phu_khoa_phan_loai === 4 ? 'selected' : ''}>4 - Loại 4 (Yếu)</option>
+                  <option value="5" ${lamSang.san_phu_khoa_phan_loai === 5 ? 'selected' : ''}>5 - Loại 5 (Rất yếu)</option>
                 </select>
               </div>
               <div class="form-group">

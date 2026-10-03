@@ -6,6 +6,33 @@ const { broadcast } = require('./sseService');
 
 const TEMPLATE_FILE = 'D:\\WorkSpace\\HC\\temp\\Danh sách khám định kỳ.xlsx';
 
+const KSK_CODE_TO_NAME = {
+  '58': 'KSK: Khám sức khỏe cho đối tượng chính sách',
+  '59': 'KSK: Khám sức khỏe an toàn thực phẩm',
+  '60': 'KSK:  Khám sức khỏe khi đi làm việc ở nước ngoài',
+  '61': 'KSK: Khám giám định y khoa, khám giám định pháp y, khám giám định pháp y tâm thần',
+  '62': 'KSK:  Khám để cấp giấy chứng thương',
+  '63': 'KSK: Khám sức khỏe cho người có công với cách mạng',
+  '64': 'KSK: Khám sức khỏe định kỳ miễn phí (người từ 18 tuổi trở lên)',
+  '65': 'KSK: Khám sức khỏe người điều khiển phương tiện giao thông đường sắt',
+  '66': 'KSK: Khám sức khỏe định kỳ cho cán bộ',
+  '91': 'KSK: Khám sức khỏe tiền hôn nhân',
+  '92': 'KSK: Khám sức khỏe người cao tuổi (trên 60 tuổi)',
+  '93': 'KSK: Khám sức khỏe định kỳ trẻ em (dưới 06 tuổi)',
+  '94': 'KSK: Khám sức khỏe bà mẹ',
+  '95': 'KSK: Khám sức khỏe định kỳ cho thuyền viên',
+  '96': 'KSK: Khám sức khỏe định kỳ cho lái xe',
+  '97': 'KSK: Khám sức khỏe nghĩa vụ quân sự, nghĩa vụ công an',
+  '98': 'KSK: Khám sức khỏe học sinh, sinh viên',
+  '99': 'KSK: Khám sức khỏe định kỳ miễn phí (người từ 18 tuổi trở lên)',
+  '100': 'KSK: Khám sức khỏe để phân loại sức khỏe để đi học, đi làm việc',
+  '101': 'KSK: Khám sàng lọc bệnh không lây nhiễm',
+  '102': 'KSK: Khám sức khỏe theo yêu cầu nghề nghiệp, công việc đặc thù',
+  '103': 'KSK: Khám phát hiện bệnh nghề nghiệp',
+  '104': 'KSK: Khám sức khỏe theo yêu cầu',
+  '105': 'KSK: Hình thức khám sức khỏe khác'
+};
+
 async function exportKskExcel({ dot_kham, date } = {}) {
   if (!fs.existsSync(TEMPLATE_FILE)) {
     throw new Error(`Không tìm thấy file mẫu tại: ${TEMPLATE_FILE}`);
@@ -95,7 +122,7 @@ async function exportKskExcel({ dot_kham, date } = {}) {
     r.getCell(11).value = p.xa_phuong || '';
     r.getCell(12).value = p.nghe_nghiep || '';
     r.getCell(13).value = p.noi_cong_tac || '';
-    r.getCell(14).value = p.doi_tuong_ksk || '';
+    r.getCell(14).value = KSK_CODE_TO_NAME[p.doi_tuong_ksk] || p.doi_tuong_ksk || '';
 
     // II. KHÁM THỂ LỰC (Cột 15-22)
     r.getCell(15).value = p.ngay_do || '';
