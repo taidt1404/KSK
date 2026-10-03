@@ -441,7 +441,7 @@ function setupEventListeners() {
   // Nút Xuất Excel 108 cột chuẩn
   const btnExportExcel = document.getElementById('btn-export-excel');
   if (btnExportExcel) {
-    btnExportExcel.onclick = () => {
+    btnExportExcel.onclick = async () => {
       let exportUrl = '/api/excel/export?';
       const qParams = [];
       if (currentDotKham) {
@@ -451,8 +451,45 @@ function setupEventListeners() {
         qParams.push(`date=${encodeURIComponent(currentDateFilter)}`);
       }
       exportUrl += qParams.join('&');
-      window.showToast('Đang tạo file Excel 108 cột (Times New Roman 12, chữ đen)...', 'info');
-      window.location.href = exportUrl;
+
+      const originalHtml = btnExportExcel.innerHTML;
+      btnExportExcel.disabled = true;
+      btnExportExcel.innerText = '⏳ Đang tạo Excel...';
+      window.showToast('Đang tạo file Excel 108 cột chuẩn...', 'info');
+
+      try {
+        const response = await fetch(exportUrl);
+        if (!response.ok) {
+          throw new Error('Lỗi máy chủ (' + response.status + ')');
+        }
+
+        let filename = 'Ket_qua_KSK_Tong_hop.xlsx';
+        const disposition = response.headers.get('Content-Disposition');
+        if (disposition && disposition.includes('filename=')) {
+          const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+          if (match && match[1]) {
+            filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
+          }
+        }
+
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+
+        window.showToast('Đã tải xuống file Excel thành công!', 'success');
+      } catch (err) {
+        console.error('Lỗi tải file Excel:', err);
+        window.showToast('Lỗi tải file: ' + err.message, 'error');
+      } finally {
+        btnExportExcel.disabled = false;
+        btnExportExcel.innerHTML = originalHtml;
+      }
     };
   }
 
