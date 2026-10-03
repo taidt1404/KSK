@@ -68,30 +68,30 @@ function renderReceptionView(container, patientData) {
           <div class="form-group">
             <label>Đối tượng KSK</label>
             <select id="rec-doi_tuong_ksk" class="form-control">
-              <option value="KSK: Khám sức khỏe định kỳ miễn phí (người từ 18 tuổi trở lên)" ${(!p.doi_tuong_ksk || p.doi_tuong_ksk === 'KSK: Khám sức khỏe định kỳ miễn phí (người từ 18 tuổi trở lên)' || p.doi_tuong_ksk === '64') ? 'selected' : ''}>KSK: Khám sức khỏe định kỳ miễn phí (người từ 18 tuổi trở lên)</option>
-              <option value="KSK: Khám sức khỏe để phân loại sức khỏe để đi học, đi làm việc" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe để phân loại sức khỏe để đi học, đi làm việc' ? 'selected' : ''}>KSK: Khám sức khỏe để phân loại sức khỏe để đi học, đi làm việc</option>
-              <option value="KSK:  Khám sức khỏe định kỳ nhân viên hàng không" ${p.doi_tuong_ksk === 'KSK:  Khám sức khỏe định kỳ nhân viên hàng không' ? 'selected' : ''}>KSK:  Khám sức khỏe định kỳ nhân viên hàng không</option>
-              <option value="KSK: Khám sức khỏe cho đối tượng chính sách" ${(p.doi_tuong_ksk === 'KSK: Khám sức khỏe cho đối tượng chính sách' || p.doi_tuong_ksk === '58') ? 'selected' : ''}>KSK: Khám sức khỏe cho đối tượng chính sách</option>
-              <option value="KSK: Khám sức khỏe an toàn thực phẩm" ${(p.doi_tuong_ksk === 'KSK: Khám sức khỏe an toàn thực phẩm' || p.doi_tuong_ksk === '59') ? 'selected' : ''}>KSK: Khám sức khỏe an toàn thực phẩm</option>
-              <option value="KSK:  Khám sức khỏe khi đi làm việc ở nước ngoài" ${(p.doi_tuong_ksk === 'KSK:  Khám sức khỏe khi đi làm việc ở nước ngoài' || p.doi_tuong_ksk === '60') ? 'selected' : ''}>KSK:  Khám sức khỏe khi đi làm việc ở nước ngoài</option>
-              <option value="KSK: Khám giám định y khoa, khám giám định pháp y, khám giám định pháp y tâm thần" ${(p.doi_tuong_ksk === 'KSK: Khám giám định y khoa, khám giám định pháp y, khám giám định pháp y tâm thần' || p.doi_tuong_ksk === '61') ? 'selected' : ''}>KSK: Khám giám định y khoa, khám giám định pháp y, khám giám định pháp y tâm thần</option>
-              <option value="KSK:  Khám để cấp giấy chứng thương" ${p.doi_tuong_ksk === 'KSK:  Khám để cấp giấy chứng thương' ? 'selected' : ''}>KSK:  Khám để cấp giấy chứng thương</option>
-              <option value="KSK: Khám sức khỏe cho người có công với cách mạng" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe cho người có công với cách mạng' ? 'selected' : ''}>KSK: Khám sức khỏe cho người có công với cách mạng</option>
-              <option value="KSK: Khám sức khỏe người điều khiển phương tiện giao thông đường sắt" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe người điều khiển phương tiện giao thông đường sắt' ? 'selected' : ''}>KSK: Khám sức khỏe người điều khiển phương tiện giao thông đường sắt</option>
-              <option value="KSK: Khám sức khỏe định kỳ cho cán bộ" ${(p.doi_tuong_ksk === 'KSK: Khám sức khỏe định kỳ cho cán bộ' || p.doi_tuong_ksk === '66') ? 'selected' : ''}>KSK: Khám sức khỏe định kỳ cho cán bộ</option>
-              <option value="KSK: Khám sức khỏe tiền hôn nhân" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe tiền hôn nhân' ? 'selected' : ''}>KSK: Khám sức khỏe tiền hôn nhân</option>
-              <option value="KSK: Khám sức khỏe người cao tuổi (trên 60 tuổi)" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe người cao tuổi (trên 60 tuổi)' ? 'selected' : ''}>KSK: Khám sức khỏe người cao tuổi (trên 60 tuổi)</option>
-              <option value="KSK: Khám sức khỏe định kỳ trẻ em (dưới 06 tuổi)" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe định kỳ trẻ em (dưới 06 tuổi)' ? 'selected' : ''}>KSK: Khám sức khỏe định kỳ trẻ em (dưới 06 tuổi)</option>
-              <option value="KSK: Khám sức khỏe bà mẹ" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe bà mẹ' ? 'selected' : ''}>KSK: Khám sức khỏe bà mẹ</option>
-              <option value="KSK: Khám sức khỏe định kỳ cho thuyền viên" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe định kỳ cho thuyền viên' ? 'selected' : ''}>KSK: Khám sức khỏe định kỳ cho thuyền viên</option>
-              <option value="KSK: Khám sức khỏe định kỳ cho lái xe" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe định kỳ cho lái xe' ? 'selected' : ''}>KSK: Khám sức khỏe định kỳ cho lái xe</option>
-              <option value="KSK: Khám sức khỏe nghĩa vụ quân sự, nghĩa vụ công an" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe nghĩa vụ quân sự, nghĩa vụ công an' ? 'selected' : ''}>KSK: Khám sức khỏe nghĩa vụ quân sự, nghĩa vụ công an</option>
-              <option value="KSK: Khám sức khỏe học sinh, sinh viên" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe học sinh, sinh viên' ? 'selected' : ''}>KSK: Khám sức khỏe học sinh, sinh viên</option>
-              <option value="KSK: Khám sàng lọc bệnh không lây nhiễm" ${p.doi_tuong_ksk === 'KSK: Khám sàng lọc bệnh không lây nhiễm' ? 'selected' : ''}>KSK: Khám sàng lọc bệnh không lây nhiễm</option>
-              <option value="KSK: Khám sức khỏe theo yêu cầu nghề nghiệp, công việc đặc thù" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe theo yêu cầu nghề nghiệp, công việc đặc thù' ? 'selected' : ''}>KSK: Khám sức khỏe theo yêu cầu nghề nghiệp, công việc đặc thù</option>
-              <option value="KSK: Khám phát hiện bệnh nghề nghiệp" ${p.doi_tuong_ksk === 'KSK: Khám phát hiện bệnh nghề nghiệp' ? 'selected' : ''}>KSK: Khám phát hiện bệnh nghề nghiệp</option>
-              <option value="KSK: Khám sức khỏe theo yêu cầu" ${p.doi_tuong_ksk === 'KSK: Khám sức khỏe theo yêu cầu' ? 'selected' : ''}>KSK: Khám sức khỏe theo yêu cầu</option>
-              <option value="KSK: Hình thức khám sức khỏe khác" ${p.doi_tuong_ksk === 'KSK: Hình thức khám sức khỏe khác' ? 'selected' : ''}>KSK: Hình thức khám sức khỏe khác</option>
+              <option value="58" ${(p.doi_tuong_ksk === '58' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('đối tượng chính sách'))) ? 'selected' : ''}>58 - KSK: Khám sức khỏe cho đối tượng chính sách</option>
+              <option value="59" ${(p.doi_tuong_ksk === '59' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('an toàn thực phẩm'))) ? 'selected' : ''}>59 - KSK: Khám sức khỏe an toàn thực phẩm</option>
+              <option value="60" ${(p.doi_tuong_ksk === '60' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('làm việc ở nước ngoài'))) ? 'selected' : ''}>60 - KSK: Khám sức khỏe khi đi làm việc ở nước ngoài</option>
+              <option value="61" ${(p.doi_tuong_ksk === '61' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('giám định y khoa'))) ? 'selected' : ''}>61 - KSK: Khám giám định y khoa, khám giám định pháp y, khám giám định pháp y tâm thần</option>
+              <option value="62" ${(p.doi_tuong_ksk === '62' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('giấy chứng thương'))) ? 'selected' : ''}>62 - KSK: Khám để cấp giấy chứng thương</option>
+              <option value="63" ${(p.doi_tuong_ksk === '63' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('có công với cách mạng'))) ? 'selected' : ''}>63 - KSK: Khám sức khỏe cho người có công với cách mạng</option>
+              <option value="64" ${(!p.doi_tuong_ksk || p.doi_tuong_ksk === '64' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('hàng không')) || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('miễn phí'))) ? 'selected' : ''}>64 - KSK: Khám sức khỏe định kỳ nhân viên hàng không</option>
+              <option value="65" ${(p.doi_tuong_ksk === '65' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('đường sắt'))) ? 'selected' : ''}>65 - KSK: Khám sức khỏe người điều khiển phương tiện giao thông đường sắt</option>
+              <option value="66" ${(p.doi_tuong_ksk === '66' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('cán bộ'))) ? 'selected' : ''}>66 - KSK: Khám sức khỏe định kỳ cho cán bộ</option>
+              <option value="91" ${(p.doi_tuong_ksk === '91' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('tiền hôn nhân'))) ? 'selected' : ''}>91 - KSK: Khám sức khỏe tiền hôn nhân</option>
+              <option value="92" ${(p.doi_tuong_ksk === '92' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('người cao tuổi'))) ? 'selected' : ''}>92 - KSK: Khám sức khỏe người cao tuổi (trên 60 tuổi)</option>
+              <option value="93" ${(p.doi_tuong_ksk === '93' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('trẻ em'))) ? 'selected' : ''}>93 - KSK: Khám sức khỏe định kỳ trẻ em (dưới 06 tuổi)</option>
+              <option value="94" ${(p.doi_tuong_ksk === '94' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('bà mẹ'))) ? 'selected' : ''}>94 - KSK: Khám sức khỏe bà mẹ</option>
+              <option value="95" ${(p.doi_tuong_ksk === '95' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('thuyền viên'))) ? 'selected' : ''}>95 - KSK: Khám sức khỏe định kỳ cho thuyền viên</option>
+              <option value="96" ${(p.doi_tuong_ksk === '96' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('lái xe'))) ? 'selected' : ''}>96 - KSK: Khám sức khỏe định kỳ cho lái xe</option>
+              <option value="97" ${(p.doi_tuong_ksk === '97' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('quân sự'))) ? 'selected' : ''}>97 - KSK: Khám sức khỏe nghĩa vụ quân sự, nghĩa vụ công an</option>
+              <option value="98" ${(p.doi_tuong_ksk === '98' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('học sinh'))) ? 'selected' : ''}>98 - KSK: Khám sức khỏe học sinh, sinh viên</option>
+              <option value="99" ${(p.doi_tuong_ksk === '99' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('người từ 18 tuổi trở lên'))) ? 'selected' : ''}>99 - KSK: Khám sức khỏe định kỳ miễn phí (người từ 18 tuổi trở lên)</option>
+              <option value="100" ${(p.doi_tuong_ksk === '100' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('đi học, đi làm việc'))) ? 'selected' : ''}>100 - KSK: Khám sức khỏe để phân loại sức khỏe để đi học, đi làm việc</option>
+              <option value="101" ${(p.doi_tuong_ksk === '101' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('không lây nhiễm'))) ? 'selected' : ''}>101 - KSK: Khám sàng lọc bệnh không lây nhiễm</option>
+              <option value="102" ${(p.doi_tuong_ksk === '102' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('đặc thù'))) ? 'selected' : ''}>102 - KSK: Khám sức khỏe theo yêu cầu nghề nghiệp, công việc đặc thù</option>
+              <option value="103" ${(p.doi_tuong_ksk === '103' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('nghề nghiệp'))) ? 'selected' : ''}>103 - KSK: Khám phát hiện bệnh nghề nghiệp</option>
+              <option value="104" ${(p.doi_tuong_ksk === '104' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('theo yêu cầu'))) ? 'selected' : ''}>104 - KSK: Khám sức khỏe theo yêu cầu</option>
+              <option value="105" ${(p.doi_tuong_ksk === '105' || (p.doi_tuong_ksk && p.doi_tuong_ksk.includes('khác'))) ? 'selected' : ''}>105 - KSK: Hình thức khám sức khỏe khác</option>
             </select>
           </div>
         </div>

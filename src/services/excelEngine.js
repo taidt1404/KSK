@@ -9,11 +9,11 @@ const TEMPLATE_FILE = 'D:\\WorkSpace\\HC\\temp\\Danh sách khám định kỳ.xl
 const KSK_CODE_TO_NAME = {
   '58': 'KSK: Khám sức khỏe cho đối tượng chính sách',
   '59': 'KSK: Khám sức khỏe an toàn thực phẩm',
-  '60': 'KSK:  Khám sức khỏe khi đi làm việc ở nước ngoài',
+  '60': 'KSK: Khám sức khỏe khi đi làm việc ở nước ngoài',
   '61': 'KSK: Khám giám định y khoa, khám giám định pháp y, khám giám định pháp y tâm thần',
-  '62': 'KSK:  Khám để cấp giấy chứng thương',
+  '62': 'KSK: Khám để cấp giấy chứng thương',
   '63': 'KSK: Khám sức khỏe cho người có công với cách mạng',
-  '64': 'KSK: Khám sức khỏe định kỳ miễn phí (người từ 18 tuổi trở lên)',
+  '64': 'KSK: Khám sức khỏe định kỳ nhân viên hàng không',
   '65': 'KSK: Khám sức khỏe người điều khiển phương tiện giao thông đường sắt',
   '66': 'KSK: Khám sức khỏe định kỳ cho cán bộ',
   '91': 'KSK: Khám sức khỏe tiền hôn nhân',
@@ -32,6 +32,15 @@ const KSK_CODE_TO_NAME = {
   '104': 'KSK: Khám sức khỏe theo yêu cầu',
   '105': 'KSK: Hình thức khám sức khỏe khác'
 };
+
+function getKskDisplayName(val) {
+  if (!val) return '';
+  const str = String(val).trim();
+  if (KSK_CODE_TO_NAME[str]) return KSK_CODE_TO_NAME[str];
+  const match = str.match(/^\d+\s*-\s*(.+)$/);
+  if (match) return match[1].trim();
+  return str;
+}
 
 async function exportKskExcel({ dot_kham, date } = {}) {
   if (!fs.existsSync(TEMPLATE_FILE)) {
@@ -388,5 +397,6 @@ async function importCompanyExcel(filePath, dotKhamDefault = 'Đoàn KSK') {
 
 module.exports = {
   exportKskExcel,
-  importCompanyExcel
+  importCompanyExcel,
+  getKskDisplayName
 };
