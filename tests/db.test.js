@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 const assert = require('assert');
 const { getDb, run, get, all } = require('../src/db/database');
 const { initSchema } = require('../src/db/initSchema');
