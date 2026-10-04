@@ -276,10 +276,21 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Xóa bệnh nhân
+// Xóa bệnh nhân (Chỉ Quản trị viên có mã PIN bảo mật)
+const ADMIN_PIN = process.env.ADMIN_PIN || '1404';
+
 router.delete('/:id', async (req, res) => {
   try {
     const patientId = req.params.id;
+    const providedPin = req.headers['x-admin-pin'] || req.body?.adminPin;
+
+    if (!providedPin || String(providedPin).trim() !== String(ADMIN_PIN).trim()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Mã PIN Quản trị viên không chính xác. Chỉ Quản trị viên mới có quyền xóa bệnh nhân.'
+      });
+    }
+
     await run('DELETE FROM patients WHERE id = ?', [patientId]);
     broadcast('PATIENT_DELETED', { id: patientId });
     res.json({ success: true, message: 'Đã xóa bệnh nhân thành công.' });

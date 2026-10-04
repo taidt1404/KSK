@@ -216,6 +216,13 @@ async function initApp() {
       if (selectedPatientId && incomingId && String(incomingId) === String(selectedPatientId)) {
         loadPatientDetail(selectedPatientId);
       }
+    } else if (event.type === 'PATIENT_DELETED') {
+      loadPatientList(false);
+      const incomingId = event.data?.patientId ?? event.data?.id;
+      if (selectedPatientId && incomingId && String(incomingId) === String(selectedPatientId)) {
+        clearSelectedPatient();
+        window.showToast('Hồ sơ bệnh nhân này vừa được Quản trị viên xóa.', 'info');
+      }
     }
   });
 
@@ -446,12 +453,15 @@ async function loadPatientDetail(patientId) {
 function updatePatientBanner(p) {
   const nameEl = document.getElementById('banner-patient-name');
   const metaEl = document.getElementById('banner-patient-meta');
+  const btnDelete = document.getElementById('btn-delete-patient-nav');
   if (!p) {
     if (nameEl) nameEl.innerText = 'Chưa chọn bệnh nhân';
     if (metaEl) metaEl.innerHTML = '';
+    if (btnDelete) btnDelete.style.display = 'none';
     return;
   }
 
+  if (btnDelete) btnDelete.style.display = 'inline-flex';
   if (nameEl) nameEl.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${p.ho_ten}`;
   if (metaEl) {
     metaEl.innerHTML = `
@@ -680,6 +690,88 @@ function setupEventListeners() {
       window.RoomManager.setCurrentRoom('tiep_don');
       clearSelectedPatient();
     };
+  }
+
+  // Xử lý Xóa bệnh nhân (Chỉ Quản trị viên có mã PIN)
+  const btnDeletePatient = document.getElementById('btn-delete-patient-nav');
+  const modalDelete = document.getElementById('modal-delete-patient');
+  const btnCloseDeleteModal = document.getElementById('btn-close-delete-modal');
+  const btnCancelDelete = document.getElementById('btn-cancel-delete');
+  const btnConfirmDelete = document.getElementById('btn-confirm-delete');
+  const inputAdminPin = document.getElementById('input-admin-pin');
+  const patientInfoText = document.getElementById('delete-modal-patient-info');
+
+  if (btnDeletePatient && modalDelete) {
+    btnDeletePatient.onclick = () => {
+      if (!selectedPatientData || !selectedPatientData.patient) {
+        window.showToast('Vui lòng chọn bệnh nhân cần xóa', 'warning');
+        return;
+      }
+      const p = selectedPatientData.patient;
+      if (patientInfoText) {
+        patientInfoText.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${p.ho_ten} (${p.ngay_sinh}, ${p.gioi_tinh === 1 ? 'Nam' : 'Nữ'})${p.cccd ? ' - CCCD: ' + p.cccd : ''}`;
+      }
+      if (inputAdminPin) inputAdminPin.value = '';
+      modalDelete.classList.remove('hidden');
+      setTimeout(() => inputAdminPin?.focus(), 100);
+    };
+  }
+
+  const closeDeleteModal = () => {
+    if (modalDelete) modalDelete.classList.add('hidden');
+    if (inputAdminPin) inputAdminPin.value = '';
+  };
+
+  if (btnCloseDeleteModal) btnCloseDeleteModal.onclick = closeDeleteModal;
+  if (btnCancelDelete) btnCancelDelete.onclick = closeDeleteModal;
+
+  if (btnConfirmDelete) {
+    btnConfirmDelete.onclick = async () => {
+      const pin = inputAdminPin ? inputAdminPin.value.trim() : '';
+      if (!pin) {
+        window.showToast('Vui lòng nhập mã PIN Quản trị viên', 'error');
+        inputAdminPin?.focus();
+        return;
+      }
+      if (!selectedPatientId) return;
+
+      btnConfirmDelete.disabled = true;
+      btnConfirmDelete.innerText = 'Đang xóa...';
+
+      try {
+        const res = await fetch(`/api/patients/${selectedPatientId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': pin
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.showToast('Đã xóa hồ sơ bệnh nhân thành công!', 'success');
+          closeDeleteModal();
+          clearSelectedPatient();
+          await loadPatientList(false);
+        } else {
+          window.showToast(data.message || 'Mã PIN không đúng hoặc lỗi xóa hồ sơ', 'error');
+          inputAdminPin?.focus();
+        }
+      } catch (err) {
+        window.showToast('Lỗi kết nối khi xóa: ' + err.message, 'error');
+      } finally {
+        btnConfirmDelete.disabled = false;
+        btnConfirmDelete.innerText = 'Xác Nhận Xóa';
+      }
+    };
+
+    if (inputAdminPin) {
+      inputAdminPin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnConfirmDelete.click();
+        }
+      });
+    }
   }
 }
 

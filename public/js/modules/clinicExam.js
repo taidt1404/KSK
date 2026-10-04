@@ -17,7 +17,8 @@ const SPECIALTY_DOCTORS = {
   ],
   tmh: [
     'Nguyễn Văn Chính',
-    'Nguyễn Thị Hà'
+    'Nguyễn Thị Hà',
+    'Nguyễn Xuân Thiêm'
   ],
   rhm: [
     'Nguyễn Thị Quyên',

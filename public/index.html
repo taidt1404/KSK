@@ -91,9 +91,12 @@
             <div id="banner-patient-meta" class="banner-meta"></div>
           </div>
         </div>
-        <div>
+        <div style="display: flex; gap: 8px; align-items: center;">
           <button class="btn btn-secondary btn-sm" id="btn-new-patient-nav">
             ➕ Tiếp Đón Bệnh Nhân Mới
+          </button>
+          <button class="btn btn-outline-danger btn-sm" id="btn-delete-patient-nav" style="display: none; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Chỉ Quản trị viên có mã PIN mới có thể xóa hồ sơ này">
+            🔒 Xóa Bệnh Nhân
           </button>
         </div>
       </div>
@@ -119,6 +122,41 @@
         <div id="room-selection-grid" class="room-grid">
           <!-- Rendered by RoomManager -->
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: XÁC NHẬN XÓA BỆNH NHÂN (QUẢN TRỊ VIÊN) -->
+  <div id="modal-delete-patient" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="color: #dc2626; display: flex; align-items: center; gap: 8px;">
+          <span>🗑️</span> Xác Nhận Xóa Bệnh Nhân
+        </h3>
+        <button class="modal-close" id="btn-close-delete-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 18px 20px;">
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <p style="margin: 0; font-size: 13px; color: #991b1b; line-height: 1.5;">
+            ⚠️ <strong>Cảnh báo quan trọng:</strong> Hành động này sẽ xóa hoàn toàn hồ sơ và mọi kết quả khám của bệnh nhân:
+          </p>
+          <p style="margin: 8px 0 0 0; font-size: 14px; font-weight: bold; color: #7f1d1d;" id="delete-modal-patient-info">
+            [Tên bệnh nhân]
+          </p>
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 600; font-size: 13px;">Mã PIN Quản trị viên <span class="req">*</span></label>
+          <input type="password" id="input-admin-pin" class="form-control" placeholder="Nhập mã PIN bảo mật để xóa..." autocomplete="off">
+          <small style="color: var(--text-muted); font-size: 11.5px; margin-top: 6px; display: block;">
+            🔒 Chỉ Quản trị viên có mã PIN này mới có thể xóa. Các phòng khám và tiếp đón không thể xóa.
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--border);">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-delete">Hủy</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-delete" style="background: #dc2626; border-color: #dc2626; color: white; padding: 6px 16px; font-weight: 600;">
+          Xác Nhận Xóa
+        </button>
       </div>
     </div>
   </div>
