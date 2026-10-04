@@ -94,6 +94,38 @@ async function testApi() {
     assert.strictEqual(detailJson.data.patient.trang_thai, 'HOAN_THANH');
     console.log('5. Truy vấn kiểm tra chi tiết hồ sơ hoàn tất thành công!');
 
+    // 6. Kiểm tra xóa bệnh nhân với mật khẩu sai (111 / 222abc) -> phải trả về 403
+    const delFailRes = await fetch(`${baseUrl}/api/patients/${pId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-pin': encodeURIComponent('111')
+      },
+      body: JSON.stringify({ adminPin: '222 222abc' })
+    });
+    assert.strictEqual(delFailRes.status, 403);
+    const delFailJson = await delFailRes.json();
+    assert.strictEqual(delFailJson.success, false);
+    console.log('6. Kiểm tra chặn mật khẩu sai (403) thành công!');
+
+    // 7. Kiểm tra xóa bệnh nhân với mật khẩu đúng (BVHC@123$%^) -> phải thành công 200
+    const delSuccessRes = await fetch(`${baseUrl}/api/patients/${pId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-pin': encodeURIComponent('BVHC@123$%^')
+      },
+      body: JSON.stringify({ adminPin: 'BVHC@123$%^' })
+    });
+    assert.strictEqual(delSuccessRes.status, 200);
+    const delSuccessJson = await delSuccessRes.json();
+    assert.strictEqual(delSuccessJson.success, true);
+
+    // Kiểm tra bệnh nhân đã biến mất hoàn toàn
+    const checkDeletedRes = await fetch(`${baseUrl}/api/patients/${pId}`);
+    assert.strictEqual(checkDeletedRes.status, 404);
+    console.log('7. Xóa thành công bằng mật khẩu BVHC@123$%^ và kiểm tra sạch dữ liệu thành công!');
+
     console.log('✅ TEST REST APIs HOÀN TẤT THÀNH CÔNG!');
   } finally {
     const { closeDb } = require('../src/db/database');

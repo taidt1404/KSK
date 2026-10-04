@@ -729,7 +729,7 @@ function setupEventListeners() {
     btnConfirmDelete.onclick = async () => {
       const pin = inputAdminPin ? inputAdminPin.value.trim() : '';
       if (!pin) {
-        window.showToast('Vui lòng nhập mã PIN Quản trị viên', 'error');
+        window.showToast('Vui lòng nhập mật khẩu Quản trị viên', 'error');
         inputAdminPin?.focus();
         return;
       }
@@ -743,17 +743,18 @@ function setupEventListeners() {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'x-admin-pin': pin
-          }
+            'x-admin-pin': encodeURIComponent(pin)
+          },
+          body: JSON.stringify({ adminPin: pin })
         });
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           window.showToast('Đã xóa hồ sơ bệnh nhân thành công!', 'success');
           closeDeleteModal();
           clearSelectedPatient();
           await loadPatientList(false);
         } else {
-          window.showToast(data.message || 'Mã PIN không đúng hoặc lỗi xóa hồ sơ', 'error');
+          window.showToast(data.message || 'Mật khẩu quản trị không chính xác!', 'error');
           inputAdminPin?.focus();
         }
       } catch (err) {

@@ -276,18 +276,25 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Xóa bệnh nhân (Chỉ Quản trị viên có mã PIN bảo mật)
-const ADMIN_PIN = process.env.ADMIN_PIN || '1404';
+// Xóa bệnh nhân (Chỉ Quản trị viên có mật khẩu bảo mật)
+const ADMIN_PIN = process.env.ADMIN_PIN || 'BVHC@123$%^';
 
 router.delete('/:id', async (req, res) => {
   try {
     const patientId = req.params.id;
-    const providedPin = req.headers['x-admin-pin'] || req.body?.adminPin;
+    let providedPin = req.body?.adminPin;
+    if (!providedPin && req.headers['x-admin-pin']) {
+      try {
+        providedPin = decodeURIComponent(req.headers['x-admin-pin']);
+      } catch (e) {
+        providedPin = req.headers['x-admin-pin'];
+      }
+    }
 
-    if (!providedPin || String(providedPin).trim() !== String(ADMIN_PIN).trim()) {
+    if (!providedPin || providedPin !== ADMIN_PIN) {
       return res.status(403).json({
         success: false,
-        message: 'Mã PIN Quản trị viên không chính xác. Chỉ Quản trị viên mới có quyền xóa bệnh nhân.'
+        message: 'Mật khẩu Quản trị viên không chính xác. Chỉ Quản trị viên mới có quyền xóa bệnh nhân.'
       });
     }
 
