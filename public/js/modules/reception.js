@@ -26,7 +26,11 @@ function renderReceptionView(container, patientData) {
           </div>
           <div class="form-group">
             <label>Ngày sinh (DD/MM/YYYY) <span class="req">*</span></label>
-            <input type="text" id="rec-ngay_sinh" class="form-control" value="${p.ngay_sinh || ''}" placeholder="Ví dụ: 15/05/1990" required>
+            <div class="date-picker-wrapper">
+              <input type="text" id="rec-ngay_sinh" class="form-control" value="${p.ngay_sinh || ''}" placeholder="Ví dụ: 15/05/1990" maxlength="10" required>
+              <button type="button" class="btn-picker-cal" tabindex="-1" title="Chọn ngày từ lịch">📅</button>
+              <input type="date" tabindex="-1" class="native-picker-input">
+            </div>
           </div>
           <div class="form-group">
             <label>Giới tính <span class="req">*</span></label>
@@ -44,7 +48,11 @@ function renderReceptionView(container, patientData) {
           </div>
           <div class="form-group">
             <label>Ngày cấp CCCD</label>
-            <input type="text" id="rec-ngay_cap_cccd" class="form-control" value="${p.ngay_cap_cccd || ''}" placeholder="DD/MM/YYYY">
+            <div class="date-picker-wrapper">
+              <input type="text" id="rec-ngay_cap_cccd" class="form-control" value="${p.ngay_cap_cccd || ''}" placeholder="DD/MM/YYYY" maxlength="10">
+              <button type="button" class="btn-picker-cal" tabindex="-1" title="Chọn ngày từ lịch">📅</button>
+              <input type="date" tabindex="-1" class="native-picker-input">
+            </div>
           </div>
           <div class="form-group">
             <label>Nơi cấp CCCD</label>
@@ -366,6 +374,10 @@ async function loadAddressLookups() {
       updateWards(e.target.value);
     });
     updateWards(inputTinh.value || 'Thành phố Cần Thơ');
+  }
+
+  if (window.initDateInputs) {
+    window.initDateInputs(container);
   }
 }
 

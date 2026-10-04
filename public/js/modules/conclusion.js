@@ -16,7 +16,7 @@ function renderConclusionView(container, patientData) {
   const ketLuan = patientData.ket_luan || {};
 
   const savedDoctor = window.RoomManager.getSavedDoctor('ket_luan');
-  const todayStr = new Date().toLocaleDateString('vi-VN');
+  const todayStr = window.getTodayDMY ? window.getTodayDMY() : new Date().toLocaleDateString('vi-VN');
 
   const DOCTOR_OPTIONS = [
     'Nguyễn Văn Làn',
@@ -150,7 +150,11 @@ function renderConclusionView(container, patientData) {
           </div>
           <div class="form-group">
             <label>Ngày kết luận <span class="req">*</span></label>
-            <input type="text" id="kl-ngay_ket_luan" class="form-control" value="${ketLuan.ngay_ket_luan || todayStr}" required>
+            <div class="date-picker-wrapper">
+              <input type="text" id="kl-ngay_ket_luan" class="form-control date-input-mask" value="${ketLuan.ngay_ket_luan || todayStr}" placeholder="DD/MM/YYYY" maxlength="10" required>
+              <button type="button" class="btn-picker-cal" tabindex="-1" title="Chọn ngày từ lịch">📅</button>
+              <input type="date" tabindex="-1" class="native-picker-input">
+            </div>
           </div>
         </div>
 
@@ -417,6 +421,10 @@ function renderConclusionView(container, patientData) {
       window.showToast('Lỗi mạng: ' + err.message, 'error');
     }
   });
+
+  if (window.initDateInputs) {
+    window.initDateInputs(container);
+  }
 }
 
 let cachedDefaultIcd10 = null;

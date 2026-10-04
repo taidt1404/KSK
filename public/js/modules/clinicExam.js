@@ -15,7 +15,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
   const cls = patientData.can_lam_sang || {};
 
   const savedDoctor = window.RoomManager.getSavedDoctor(currentRoomId);
-  const todayStr = new Date().toLocaleDateString('vi-VN');
+  const todayStr = window.getTodayDMY ? window.getTodayDMY() : new Date().toLocaleDateString('vi-VN');
 
   let formHtml = '';
 
@@ -31,7 +31,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-3">
             <div class="form-group">
               <label>Ngày đo</label>
-              <input type="text" id="ex-ngay_do" class="form-control" value="${theLuc.ngay_do || todayStr}">
+              <div class="date-picker-wrapper">
+                <input type="text" id="ex-ngay_do" class="form-control date-input-mask" value="${theLuc.ngay_do || todayStr}" placeholder="DD/MM/YYYY" maxlength="10">
+                <button type="button" class="btn-picker-cal" tabindex="-1" title="Chọn ngày từ lịch">📅</button>
+                <input type="date" tabindex="-1" class="native-picker-input">
+              </div>
             </div>
             <div class="form-group">
               <label>Cân nặng (kg)</label>
@@ -292,7 +296,11 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-3">
             <div class="form-group">
               <label>Ngày khám</label>
-              <input type="text" id="ex-noi_ngay_kham" class="form-control" value="${lamSang.noi_ngay_kham || todayStr}">
+              <div class="date-picker-wrapper">
+                <input type="text" id="ex-noi_ngay_kham" class="form-control date-input-mask" value="${lamSang.noi_ngay_kham || todayStr}" placeholder="DD/MM/YYYY" maxlength="10">
+                <button type="button" class="btn-picker-cal" tabindex="-1" title="Chọn ngày từ lịch">📅</button>
+                <input type="date" tabindex="-1" class="native-picker-input">
+              </div>
             </div>
             <div class="form-group">
               <label>Bác sỹ khám Nội</label>
@@ -303,7 +311,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 16px;">
             <div class="form-group">
               <label>1. Khám Tuần hoàn</label>
-              <input type="text" id="ex-noi_tuan_hoan" class="form-control" value="${lamSang.noi_tuan_hoan || 'Tiếng tim đều, rõ'}">
+              <input type="text" id="ex-noi_tuan_hoan" class="form-control" value="${lamSang.noi_tuan_hoan || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Tuần hoàn</label>
@@ -320,7 +328,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
               <label>2. Khám Hô hấp</label>
-              <input type="text" id="ex-noi_ho_hap" class="form-control" value="${lamSang.noi_ho_hap || 'Phổi trong, không rales'}">
+              <input type="text" id="ex-noi_ho_hap" class="form-control" value="${lamSang.noi_ho_hap || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Hô hấp</label>
@@ -337,7 +345,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
               <label>3. Khám Tiêu hóa</label>
-              <input type="text" id="ex-noi_tieu_hoa" class="form-control" value="${lamSang.noi_tieu_hoa || 'Bụng mềm, không đau'}">
+              <input type="text" id="ex-noi_tieu_hoa" class="form-control" value="${lamSang.noi_tieu_hoa || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Tiêu hóa</label>
@@ -354,7 +362,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
               <label>4. Thận, Tiết niệu</label>
-              <input type="text" id="ex-noi_than_tiet_nieu" class="form-control" value="${lamSang.noi_than_tiet_nieu || 'Chạm thận (-)'}">
+              <input type="text" id="ex-noi_than_tiet_nieu" class="form-control" value="${lamSang.noi_than_tiet_nieu || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Thận, Tiết niệu</label>
@@ -405,7 +413,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           <div class="form-grid-2" style="margin-top: 12px;">
             <div class="form-group">
               <label>7. Khám Thần kinh</label>
-              <input type="text" id="ex-noi_than_kinh" class="form-control" value="${lamSang.noi_than_kinh || 'Tỉnh táo, phản xạ tốt'}">
+              <input type="text" id="ex-noi_than_kinh" class="form-control" value="${lamSang.noi_than_kinh || 'Bình thường'}">
             </div>
             <div class="form-group">
               <label>Phân loại Thần kinh</label>
@@ -771,9 +779,9 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-mat_khong_kinh_phai').value = '10';
         document.getElementById('ex-mat_khong_kinh_trai').value = '10';
         const coKinhPhai = document.getElementById('ex-mat_co_kinh_phai');
-        if (coKinhPhai) coKinhPhai.value = '10';
+        if (coKinhPhai) coKinhPhai.value = '';
         const coKinhTrai = document.getElementById('ex-mat_co_kinh_trai');
-        if (coKinhTrai) coKinhTrai.value = '10';
+        if (coKinhTrai) coKinhTrai.value = '';
         document.getElementById('ex-mat_benh').value = 'Không có';
         document.getElementById('ex-mat_phan_loai').value = '1';
         const bsMat = document.getElementById('ex-mat_bac_sy');
@@ -797,16 +805,16 @@ function renderClinicExamView(container, patientData, currentRoomId) {
       } else if (currentRoomId === 'noi') {
         const ngayKhamNoi = document.getElementById('ex-noi_ngay_kham');
         if (ngayKhamNoi && !ngayKhamNoi.value) ngayKhamNoi.value = todayStr;
-        document.getElementById('ex-noi_tuan_hoan').value = 'Tiếng tim đều, rõ';
+        document.getElementById('ex-noi_tuan_hoan').value = 'Bình thường';
         const plTuanHoan = document.getElementById('ex-noi_pl_tuan_hoan');
         if (plTuanHoan) plTuanHoan.value = '1';
-        document.getElementById('ex-noi_ho_hap').value = 'Phổi trong, không rales';
+        document.getElementById('ex-noi_ho_hap').value = 'Bình thường';
         const plHoHap = document.getElementById('ex-noi_pl_ho_hap');
         if (plHoHap) plHoHap.value = '1';
-        document.getElementById('ex-noi_tieu_hoa').value = 'Bụng mềm, không đau';
+        document.getElementById('ex-noi_tieu_hoa').value = 'Bình thường';
         const plTieuHoa = document.getElementById('ex-noi_pl_tieu_hoa');
         if (plTieuHoa) plTieuHoa.value = '1';
-        document.getElementById('ex-noi_than_tiet_nieu').value = 'Chạm thận (-)';
+        document.getElementById('ex-noi_than_tiet_nieu').value = 'Bình thường';
         const plThan = document.getElementById('ex-noi_pl_than_tiet_nieu');
         if (plThan) plThan.value = '1';
         document.getElementById('ex-noi_noi_tiet').value = 'Bình thường';
@@ -815,7 +823,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-noi_co_xuong_khop').value = 'Bình thường';
         const plKhop = document.getElementById('ex-noi_pl_co_xuong_khop');
         if (plKhop) plKhop.value = '1';
-        document.getElementById('ex-noi_than_kinh').value = 'Tỉnh táo, phản xạ tốt';
+        document.getElementById('ex-noi_than_kinh').value = 'Bình thường';
         const plThanKinh = document.getElementById('ex-noi_pl_than_kinh');
         if (plThanKinh) plThanKinh.value = '1';
         document.getElementById('ex-noi_tam_than').value = 'Bình thường';
@@ -1048,6 +1056,10 @@ function renderClinicExamView(container, patientData, currentRoomId) {
   window.onSaveExamShortcut = () => {
     saveCurrentExam();
   };
+
+  if (window.initDateInputs) {
+    window.initDateInputs(container);
+  }
 }
 
 window.ClinicExamModule = {

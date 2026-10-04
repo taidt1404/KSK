@@ -618,3 +618,47 @@ textarea.form-control {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* DATE PICKER & AUTO-SLASH INPUT WRAPPER */
+.date-picker-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.date-picker-wrapper input[type="text"] {
+  width: 100%;
+  padding-right: 34px;
+}
+.date-picker-wrapper .btn-picker-cal {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 15px;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 1;
+}
+.date-picker-wrapper:hover .btn-picker-cal {
+  opacity: 1;
+}
+.date-picker-wrapper input[type="date"].native-picker-input {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+}
+

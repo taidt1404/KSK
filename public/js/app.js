@@ -46,6 +46,145 @@ function formatDateDisplay(iso) {
   return iso;
 }
 
+// Helper trả về DD/MM/YYYY chuẩn 2 chữ số (ví dụ: 04/10/2026)
+function getTodayDMY() {
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+window.getTodayDMY = getTodayDMY;
+
+/**
+ * Khởi tạo ô nhập ngày:
+ * 1. Tự động thêm dấu gạch chéo '/' khi gõ số ngày, số tháng (VD: gõ 14 -> 14/, gõ tiếp 05 -> 14/05/)
+ * 2. Hỗ trợ chọn ngày từ lịch trực quan (popup calendar)
+ */
+window.initDateInputs = function (container) {
+  const wrappers = (container || document).querySelectorAll('.date-picker-wrapper');
+  wrappers.forEach((wrapper) => {
+    const textInput = wrapper.querySelector('input[type="text"]');
+    const nativePicker = wrapper.querySelector('input[type="date"]');
+    const calBtn = wrapper.querySelector('.btn-picker-cal');
+    if (!textInput || !nativePicker) return;
+
+    if (textInput.dataset.datePickerInited === 'true') return;
+    textInput.dataset.datePickerInited = 'true';
+
+    function syncToPicker(val) {
+      if (!val) return;
+      const parts = val.trim().split('/');
+      if (parts.length === 3) {
+        const d = parts[0].padStart(2, '0');
+        const m = parts[1].padStart(2, '0');
+        const y = parts[2];
+        if (y.length === 4 && !isNaN(parseInt(d, 10)) && !isNaN(parseInt(m, 10)) && !isNaN(parseInt(y, 10))) {
+          nativePicker.value = `${y}-${m}-${d}`;
+        }
+      }
+    }
+
+    // Đồng bộ giá trị khởi tạo ban đầu
+    syncToPicker(textInput.value);
+
+    // Khi người dùng chọn từ popup lịch
+    nativePicker.addEventListener('change', () => {
+      if (nativePicker.value) {
+        const [yyyy, mm, dd] = nativePicker.value.split('-');
+        textInput.value = `${dd}/${mm}/${yyyy}`;
+        textInput.dispatchEvent(new Event('input', { bubbles: true }));
+        textInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    if (calBtn) {
+      calBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        syncToPicker(textInput.value);
+        if (nativePicker.showPicker) {
+          try { nativePicker.showPicker(); } catch (err) { nativePicker.click(); }
+        } else {
+          nativePicker.click();
+        }
+      });
+    }
+
+    // Xử lý phím Backspace khi con trỏ ở ngay sau dấu '/'
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace') {
+        const val = textInput.value;
+        const start = textInput.selectionStart;
+        const end = textInput.selectionEnd;
+        if (start === end && start > 0 && val[start - 1] === '/') {
+          e.preventDefault();
+          textInput.value = val.slice(0, start - 2) + val.slice(start);
+          textInput.setSelectionRange(start - 2, start - 2);
+          textInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    });
+
+    // Tự động gạch chéo khi nhập
+    textInput.addEventListener('input', (e) => {
+      if (e.inputType && e.inputType.startsWith('delete')) {
+        return;
+      }
+      let v = textInput.value;
+      // Chỉ giữ số và dấu /
+      v = v.replace(/[^\d/]/g, '');
+      // Gộp nhiều dấu / liên tiếp
+      v = v.replace(/\/+/g, '/');
+
+      const parts = v.split('/');
+      if (parts.length === 1) {
+        if (parts[0].length === 2) {
+          v = parts[0] + '/';
+        } else if (parts[0].length > 2) {
+          const d = parts[0].slice(0, 2);
+          const m = parts[0].slice(2, 4);
+          const y = parts[0].slice(4, 8);
+          v = d + (m ? '/' + m : '') + (y ? '/' + y : '');
+        }
+      } else if (parts.length === 2) {
+        if (parts[1].length === 2) {
+          v = parts[0] + '/' + parts[1] + '/';
+        } else if (parts[1].length > 2) {
+          const m = parts[1].slice(0, 2);
+          const y = parts[1].slice(2, 6);
+          v = parts[0] + '/' + m + (y ? '/' + y : '');
+        }
+      } else if (parts.length >= 3) {
+        const d = parts[0];
+        const m = parts[1];
+        const y = parts[2].slice(0, 4);
+        v = `${d}/${m}/${y}`;
+      }
+
+      if (v !== textInput.value) {
+        textInput.value = v;
+      }
+
+      syncToPicker(v);
+    });
+
+    // Chuẩn hóa định dạng khi rời khỏi ô (ví dụ 1/5/1990 -> 01/05/1990)
+    textInput.addEventListener('blur', () => {
+      const v = textInput.value.trim();
+      if (!v) return;
+      const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        const d = m[1].padStart(2, '0');
+        const mo = m[2].padStart(2, '0');
+        const y = m[3];
+        textInput.value = `${d}/${mo}/${y}`;
+        syncToPicker(textInput.value);
+      }
+    });
+  });
+};
+
+
 // Toast Notification
 window.showToast = function (message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -338,6 +477,10 @@ function renderWorkspaceContent() {
     window.ConclusionModule.renderConclusionView(container, selectedPatientData);
   } else {
     window.ClinicExamModule.renderClinicExamView(container, selectedPatientData, currentRoom);
+  }
+
+  if (window.initDateInputs) {
+    window.initDateInputs(container);
   }
 }
 
