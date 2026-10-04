@@ -690,6 +690,12 @@ async function refreshCurrentPatient() {
   }
 }
 
+// Chuyển nhanh sang một phòng khám
+function switchRoom(roomId) {
+  window.RoomManager.setCurrentRoom(roomId);
+  renderWorkspaceContent();
+}
+
 window.App = {
   initApp,
   loadPatientList,
@@ -697,6 +703,7 @@ window.App = {
   selectNextPatient,
   clearSelectedPatient,
   refreshCurrentPatient,
+  switchRoom,
   setFilter
 };
 

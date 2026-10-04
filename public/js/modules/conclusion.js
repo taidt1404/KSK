@@ -29,56 +29,260 @@ function renderConclusionView(container, patientData) {
   }
   const cskcbVal = (ketLuan.ma_cskcb && ketLuan.ma_cskcb !== '79001') ? ketLuan.ma_cskcb : '24275';
 
-  // Đánh giá tình trạng hoàn thành các phòng
+  // 1. Phân tích kết quả chuyên khoa Nội
+  const organsNoi = [
+    { name: 'Tuần hoàn', val: lamSang.noi_tuan_hoan, pl: lamSang.noi_pl_tuan_hoan },
+    { name: 'Hô hấp', val: lamSang.noi_ho_hap, pl: lamSang.noi_pl_ho_hap },
+    { name: 'Tiêu hóa', val: lamSang.noi_tieu_hoa, pl: lamSang.noi_pl_tieu_hoa },
+    { name: 'Thận - Tiết niệu', val: lamSang.noi_than_tiet_nieu, pl: lamSang.noi_pl_than_tiet_nieu },
+    { name: 'Nội tiết', val: lamSang.noi_noi_tiet, pl: lamSang.noi_pl_noi_tiet },
+    { name: 'Cơ xương khớp', val: lamSang.noi_co_xuong_khop, pl: lamSang.noi_pl_co_xuong_khop },
+    { name: 'Thần kinh', val: lamSang.noi_than_kinh, pl: lamSang.noi_pl_than_kinh },
+    { name: 'Tâm thần', val: lamSang.noi_tam_than, pl: lamSang.noi_pl_tam_than }
+  ];
+
+  let noiMaxPl = 1;
+  const noiAbnormal = [];
+  organsNoi.forEach(o => {
+    if (o.pl && o.pl > noiMaxPl) noiMaxPl = o.pl;
+    if (o.val) {
+      const low = o.val.trim().toLowerCase();
+      if (low && low !== 'bình thường' && low !== 'bt' && low !== 'không' && low !== 'không có') {
+        noiAbnormal.push(`${o.name}: ${o.val}`);
+      }
+    }
+  });
+  const isNoiDone = !!(lamSang.noi_bac_sy || lamSang.noi_pl_tuan_hoan || lamSang.noi_tuan_hoan || lamSang.noi_ngay_kham);
+  const noiShort = noiAbnormal.length > 0 ? noiAbnormal[0] : 'Bình thường';
+  const noiFull = noiAbnormal.length > 0
+    ? noiAbnormal.join('; ')
+    : 'Tuần hoàn, Hô hấp, Tiêu hóa, Thận - Tiết niệu, Nội tiết, Cơ xương khớp, Thần kinh, Tâm thần: Bình thường';
+
+  // 2. Phân tích kết quả Cận Lâm Sàng
+  const cdha = [];
+  const clsAbnormal = [];
+  if (cls.cls_xquang) cdha.push(`X-Quang: ${cls.cls_xquang}`);
+  if (cls.cls_sieu_am) cdha.push(`Siêu âm: ${cls.cls_sieu_am}`);
+  if (cls.cls_dien_tim) cdha.push(`Điện tim: ${cls.cls_dien_tim}`);
+
+  const bloodTests = [];
+  if (cls.cls_hong_cau) bloodTests.push(`HC: ${cls.cls_hong_cau} T/L`);
+  if (cls.cls_bach_cau) bloodTests.push(`BC: ${cls.cls_bach_cau} G/L`);
+  if (cls.cls_tieu_cau) bloodTests.push(`TC: ${cls.cls_tieu_cau} G/L`);
+  if (cls.cls_huyet_sac_to) bloodTests.push(`HST: ${cls.cls_huyet_sac_to} g/L`);
+
+  const bioTests = [];
+  if (cls.cls_duong_huyet) bioTests.push(`Đường huyết: ${cls.cls_duong_huyet} mmol/l`);
+  if (cls.cls_ure) bioTests.push(`Ure: ${cls.cls_ure} mmol/l`);
+  if (cls.cls_creatinin) bioTests.push(`Creatinin: ${cls.cls_creatinin} µmol/l`);
+  if (cls.cls_ast || cls.cls_alt) bioTests.push(`AST/ALT: ${cls.cls_ast || '-'}/${cls.cls_alt || '-'} U/l`);
+  if (cls.cls_cholesterol_tp) bioTests.push(`Cholesterol: ${cls.cls_cholesterol_tp} mmol/l`);
+
+  [
+    { name: 'X-Quang', val: cls.cls_xquang },
+    { name: 'Siêu âm', val: cls.cls_sieu_am },
+    { name: 'Điện tim', val: cls.cls_dien_tim }
+  ].forEach(cd => {
+    if (cd.val) {
+      const low = cd.val.toLowerCase();
+      if (!low.includes('bình thường') && !low.includes('nhịp xoang') && !low.includes('chưa phát hiện')) {
+        clsAbnormal.push(`${cd.name}: ${cd.val}`);
+      }
+    }
+  });
+
+  const isClsDone = !!(cls.cls_hong_cau || cls.cls_duong_huyet || cls.cls_xquang || cls.cls_sieu_am || cls.cls_dien_tim || cls.cls_bac_sy || cls.cls_ast);
+  let clsShort = 'Đã có KQ';
+  if (clsAbnormal.length > 0) {
+    clsShort = clsAbnormal.join(', ');
+  } else if (cdha.length > 0) {
+    clsShort = 'XQ, SA, ECG: Bình thường';
+  } else if (bloodTests.length > 0 || bioTests.length > 0) {
+    clsShort = 'Xét nghiệm: Bình thường';
+  }
+
+  const clsFullItems = [];
+  if (cdha.length > 0) clsFullItems.push(`<strong>Chẩn đoán hình ảnh:</strong> ${cdha.join(' | ')}`);
+  if (bloodTests.length > 0) clsFullItems.push(`<strong>Huyết học:</strong> ${bloodTests.join(', ')}`);
+  if (bioTests.length > 0) clsFullItems.push(`<strong>Sinh hóa:</strong> ${bioTests.join(', ')}`);
+  if (cls.cls_hbsag) clsFullItems.push(`<strong>HBsAg:</strong> ${cls.cls_hbsag}`);
+  if (cls.cls_protein_nieu) clsFullItems.push(`<strong>Protein niệu:</strong> ${cls.cls_protein_nieu}`);
+  const clsFull = clsFullItems.length > 0 ? clsFullItems.join('<br>') : 'Đã thực hiện cận lâm sàng';
+
+  const isTheLucDone = !!(theLuc.can_nang || theLuc.chieu_cao || theLuc.ha_tam_thu);
+  const isNgoaiDone = !!(lamSang.ngoai_phan_loai || lamSang.ngoai_ket_qua || lamSang.ngoai_bac_sy);
+  const isMatDone = !!(lamSang.mat_phan_loai || lamSang.mat_khong_kinh_phai || lamSang.mat_benh || lamSang.mat_bac_sy);
+  const isTmhDone = !!(lamSang.tmh_phan_loai || lamSang.tmh_benh || lamSang.tmh_tai_trai_thuong || lamSang.tmh_bac_sy);
+  const isRhmDone = !!(lamSang.rhm_phan_loai || lamSang.rhm_benh || lamSang.rhm_ham_tren || lamSang.rhm_bac_sy);
+  const isDaLieuDone = !!(lamSang.da_lieu_phan_loai || lamSang.da_lieu_ket_qua || lamSang.da_lieu_bac_sy);
+
+  // Đánh giá tình trạng hoàn thành các phòng và hiển thị kết quả trực tiếp
   const checks = [
     {
+      roomId: 'the_luc',
       name: 'Thể Lực',
-      done: !!(theLuc.can_nang || theLuc.chieu_cao || theLuc.ha_tam_thu),
-      val: theLuc.can_nang ? `${theLuc.can_nang}kg / ${theLuc.chieu_cao}cm (PL ${theLuc.phan_loai_the_luc || 1})` : 'Chưa đo'
+      done: isTheLucDone,
+      val: isTheLucDone
+        ? `${theLuc.can_nang || '-'}kg / ${theLuc.chieu_cao || '-'}cm${theLuc.ha_tam_thu ? ` (HA: ${theLuc.ha_tam_thu}/${theLuc.ha_tam_truong || '-'})` : ''} (PL ${theLuc.phan_loai_the_luc || 1})`
+        : 'Chưa đo'
     },
     {
+      roomId: 'noi',
       name: 'Khám Nội',
-      done: !!(lamSang.noi_bac_sy || lamSang.noi_pl_tuan_hoan || lamSang.noi_tuan_hoan || lamSang.noi_ngay_kham),
-      val: (lamSang.noi_bac_sy || lamSang.noi_pl_tuan_hoan || lamSang.noi_tuan_hoan) ? `BS: ${lamSang.noi_bac_sy || 'Đã khám'}` : 'Chưa khám'
+      done: isNoiDone,
+      val: isNoiDone ? `${noiShort} (PL ${noiMaxPl})` : 'Chưa khám'
     },
     {
+      roomId: 'ngoai',
       name: 'Khám Ngoại',
-      done: !!(lamSang.ngoai_phan_loai || lamSang.ngoai_ket_qua || lamSang.ngoai_bac_sy),
-      val: lamSang.ngoai_phan_loai ? `PL ${lamSang.ngoai_phan_loai}` : (lamSang.ngoai_ket_qua ? 'Đã khám' : 'Chưa khám')
+      done: isNgoaiDone,
+      val: isNgoaiDone ? `${lamSang.ngoai_ket_qua || 'Bình thường'} (PL ${lamSang.ngoai_phan_loai || 1})` : 'Chưa khám'
     },
     {
+      roomId: 'mat',
       name: 'Khám Mắt',
-      done: !!(lamSang.mat_phan_loai || lamSang.mat_khong_kinh_phai || lamSang.mat_benh || lamSang.mat_bac_sy),
-      val: lamSang.mat_phan_loai ? `PL ${lamSang.mat_phan_loai} (${lamSang.mat_khong_kinh_phai || 10}/10)` : (lamSang.mat_khong_kinh_phai ? `${lamSang.mat_khong_kinh_phai}/10` : 'Chưa khám')
+      done: isMatDone,
+      val: isMatDone
+        ? `${(lamSang.mat_benh && lamSang.mat_benh !== 'Không có' && lamSang.mat_benh !== 'Bình thường') ? lamSang.mat_benh : 'Thị lực ' + (lamSang.mat_khong_kinh_phai || '10') + '/10'} (PL ${lamSang.mat_phan_loai || 1})`
+        : 'Chưa khám'
     },
     {
+      roomId: 'tmh',
       name: 'Khám TMH',
-      done: !!(lamSang.tmh_phan_loai || lamSang.tmh_benh || lamSang.tmh_tai_trai_thuong || lamSang.tmh_bac_sy),
-      val: lamSang.tmh_phan_loai ? `PL ${lamSang.tmh_phan_loai}` : (lamSang.tmh_benh ? 'Đã khám' : 'Chưa khám')
+      done: isTmhDone,
+      val: isTmhDone ? `${lamSang.tmh_benh || 'Bình thường'} (PL ${lamSang.tmh_phan_loai || 1})` : 'Chưa khám'
     },
     {
+      roomId: 'rhm',
       name: 'Khám RHM',
-      done: !!(lamSang.rhm_phan_loai || lamSang.rhm_benh || lamSang.rhm_ham_tren || lamSang.rhm_bac_sy),
-      val: lamSang.rhm_phan_loai ? `PL ${lamSang.rhm_phan_loai}` : (lamSang.rhm_benh ? 'Đã khám' : 'Chưa khám')
+      done: isRhmDone,
+      val: isRhmDone
+        ? `${(lamSang.rhm_benh && lamSang.rhm_benh !== 'Không có') ? lamSang.rhm_benh : (lamSang.rhm_ham_tren || 'Bình thường')} (PL ${lamSang.rhm_phan_loai || 1})`
+        : 'Chưa khám'
     },
     {
+      roomId: 'da_lieu',
       name: 'Khám Da Liễu',
-      done: !!(lamSang.da_lieu_phan_loai || lamSang.da_lieu_ket_qua || lamSang.da_lieu_bac_sy),
-      val: lamSang.da_lieu_phan_loai ? `PL ${lamSang.da_lieu_phan_loai}` : (lamSang.da_lieu_ket_qua ? 'Đã khám' : 'Chưa khám')
+      done: isDaLieuDone,
+      val: isDaLieuDone ? `${lamSang.da_lieu_ket_qua || 'Bình thường'} (PL ${lamSang.da_lieu_phan_loai || 1})` : 'Chưa khám'
     },
     {
+      roomId: 'cls',
       name: 'Cận Lâm Sàng',
-      done: !!(cls.cls_hong_cau || cls.cls_duong_huyet || cls.cls_xquang || cls.cls_sieu_am || cls.cls_dien_tim || cls.cls_bac_sy || cls.cls_ast),
-      val: (cls.cls_hong_cau || cls.cls_xquang || cls.cls_duong_huyet || cls.cls_dien_tim || cls.cls_bac_sy) ? 'Đã có KQ' : 'Chưa có'
+      done: isClsDone,
+      val: isClsDone ? clsShort : 'Chưa có'
     }
   ];
 
   if (p.gioi_tinh === 2) {
+    const isSanDone = !!(lamSang.san_phu_khoa_phan_loai || lamSang.san_phu_khoa_ket_qua || lamSang.san_phu_khoa_bac_sy);
     checks.push({
+      roomId: 'san',
       name: 'Sản Phụ Khoa',
-      done: !!(lamSang.san_phu_khoa_phan_loai || lamSang.san_phu_khoa_ket_qua || lamSang.san_phu_khoa_bac_sy),
-      val: lamSang.san_phu_khoa_phan_loai ? `PL ${lamSang.san_phu_khoa_phan_loai}` : (lamSang.san_phu_khoa_ket_qua ? 'Đã khám' : 'Chưa khám')
+      done: isSanDone,
+      val: isSanDone ? `${lamSang.san_phu_khoa_ket_qua || 'Bình thường'} (PL ${lamSang.san_phu_khoa_phan_loai || 1})` : 'Chưa khám'
     });
+  }
+
+  // Danh sách chi tiết kết quả cho bảng tổng hợp
+  const detailedResults = [];
+
+  if (isTheLucDone) {
+    detailedResults.push({
+      roomId: 'the_luc',
+      name: '⚖️ Khám Thể Lực',
+      doctor: theLuc.nguoi_kham || savedDoctor || 'BS/ĐD Thể lực',
+      pl: `Loại ${theLuc.phan_loai_the_luc || 1}`,
+      content: `Chiều cao: <strong>${theLuc.chieu_cao || '-'} cm</strong>, Cân nặng: <strong>${theLuc.can_nang || '-'} kg</strong>${theLuc.can_nang && theLuc.chieu_cao ? ` (BMI: ${(theLuc.can_nang / ((theLuc.chieu_cao/100)*(theLuc.chieu_cao/100))).toFixed(1)})` : ''}, Huyết áp: <strong>${theLuc.ha_tam_thu || '-'}/${theLuc.ha_tam_truong || '-'} mmHg</strong>, Mạch: <strong>${theLuc.mach || '-'} ck/phút</strong>${theLuc.vong_nguc ? `, Vòng ngực: <strong>${theLuc.vong_nguc} cm</strong>` : ''}`
+    });
+  }
+
+  if (isNoiDone) {
+    detailedResults.push({
+      roomId: 'noi',
+      name: '🩺 Khám Nội Khoa',
+      doctor: lamSang.noi_bac_sy || '-',
+      pl: `Loại ${noiMaxPl}`,
+      content: noiFull
+    });
+  }
+
+  if (isNgoaiDone) {
+    detailedResults.push({
+      roomId: 'ngoai',
+      name: '🩹 Khám Ngoại Khoa',
+      doctor: lamSang.ngoai_bac_sy || '-',
+      pl: `Loại ${lamSang.ngoai_phan_loai || 1}`,
+      content: `Kết quả khám Ngoại: <strong>${lamSang.ngoai_ket_qua || 'Bình thường'}</strong>`
+    });
+  }
+
+  if (isMatDone) {
+    let matContent = `Thị lực không kính: MP <strong>${lamSang.mat_khong_kinh_phai || '10'}/10</strong> - MT <strong>${lamSang.mat_khong_kinh_trai || '10'}/10</strong>`;
+    if (lamSang.mat_co_kinh_phai || lamSang.mat_co_kinh_trai) {
+      matContent += `, Có kính: MP ${lamSang.mat_co_kinh_phai || '-'}/10 - MT ${lamSang.mat_co_kinh_trai || '-'}/10`;
+    }
+    matContent += `. Bệnh về mắt: <strong>${lamSang.mat_benh || 'Không có'}</strong>`;
+    detailedResults.push({
+      roomId: 'mat',
+      name: '👁️ Khám Mắt',
+      doctor: lamSang.mat_bac_sy || '-',
+      pl: `Loại ${lamSang.mat_phan_loai || 1}`,
+      content: matContent
+    });
+  }
+
+  if (isTmhDone) {
+    detailedResults.push({
+      roomId: 'tmh',
+      name: '👂 Khám Tai Mũi Họng',
+      doctor: lamSang.tmh_bac_sy || '-',
+      pl: `Loại ${lamSang.tmh_phan_loai || 1}`,
+      content: `Tai trái: thường <strong>${lamSang.tmh_tai_trai_thuong || '5'}m</strong>/thầm <strong>${lamSang.tmh_tai_trai_tham || '0.5'}m</strong>; Tai phải: thường <strong>${lamSang.tmh_tai_phai_thuong || '5'}m</strong>/thầm <strong>${lamSang.tmh_tai_phai_tham || '0.5'}m</strong>. Bệnh TMH: <strong>${lamSang.tmh_benh || 'Bình thường'}</strong>`
+    });
+  }
+
+  if (isRhmDone) {
+    detailedResults.push({
+      roomId: 'rhm',
+      name: '🦷 Khám Răng Hàm Mặt',
+      doctor: lamSang.rhm_bac_sy || '-',
+      pl: `Loại ${lamSang.rhm_phan_loai || 1}`,
+      content: `Hàm trên: <strong>${lamSang.rhm_ham_tren || 'Bình thường'}</strong>, Hàm dưới: <strong>${lamSang.rhm_ham_duoi || 'Bình thường'}</strong>. Bệnh RHM: <strong>${lamSang.rhm_benh || 'Không có'}</strong>`
+    });
+  }
+
+  if (isDaLieuDone) {
+    detailedResults.push({
+      roomId: 'da_lieu',
+      name: '🧴 Khám Da Liễu',
+      doctor: lamSang.da_lieu_bac_sy || '-',
+      pl: `Loại ${lamSang.da_lieu_phan_loai || 1}`,
+      content: `Kết quả khám Da liễu: <strong>${lamSang.da_lieu_ket_qua || 'Bình thường'}</strong>`
+    });
+  }
+
+  if (isClsDone) {
+    detailedResults.push({
+      roomId: 'cls',
+      name: '🧪 Cận Lâm Sàng',
+      doctor: cls.cls_bac_sy || '-',
+      pl: 'Đã có KQ',
+      content: clsFull
+    });
+  }
+
+  if (p.gioi_tinh === 2) {
+    const isSanDone = !!(lamSang.san_phu_khoa_phan_loai || lamSang.san_phu_khoa_ket_qua || lamSang.san_phu_khoa_bac_sy);
+    if (isSanDone) {
+      detailedResults.push({
+        roomId: 'san',
+        name: '🌸 Khám Sản Phụ Khoa',
+        doctor: lamSang.san_phu_khoa_bac_sy || '-',
+        pl: `Loại ${lamSang.san_phu_khoa_phan_loai || 1}`,
+        content: `Kết quả khám Phụ khoa: <strong>${lamSang.san_phu_khoa_ket_qua || 'Bình thường'}</strong>`
+      });
+    }
   }
 
   const missingRooms = checks.filter((c) => !c.done);
@@ -100,22 +304,72 @@ function renderConclusionView(container, patientData) {
 
       <div class="progress-grid">
         ${checks.map((c) => `
-          <div class="prog-chip ${c.done ? 'done' : 'waiting'}">
+          <div class="prog-chip ${c.done ? 'done' : 'waiting'}" data-room="${c.roomId}" title="Bấm để chuyển tới phòng khám này" style="cursor: pointer;">
             <div>${c.done ? '✅' : '⏳'} ${c.name}</div>
-            <div style="font-size: 11px; margin-top: 3px; opacity: 0.85;">${c.val}</div>
+            <div style="font-size: 11px; margin-top: 3px; opacity: 0.9; font-weight: 500;">${c.val}</div>
           </div>
         `).join('')}
       </div>
 
       ${missingRooms.length > 0 ? `
-        <div style="background: var(--warning-light); color: #92400e; padding: 10px 14px; border-radius: 6px; font-size: 13px;">
+        <div style="background: var(--warning-light); color: #92400e; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 14px;">
           ⚠️ <strong>Lưu ý:</strong> Bệnh nhân còn thiếu các phòng sau: <strong>${missingRooms.map((m) => m.name).join(', ')}</strong>.
         </div>
       ` : `
-        <div style="background: var(--success-light); color: #065f46; padding: 10px 14px; border-radius: 6px; font-size: 13px;">
+        <div style="background: var(--success-light); color: #065f46; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 14px;">
           ✅ Bệnh nhân đã khám đầy đủ tất cả các chuyên khoa. Bác sĩ sẵn sàng tổng kết và phân loại sức khỏe.
         </div>
       `}
+
+      <!-- BẢNG CHI TIẾT KẾT QUẢ KHÁM TỪNG KHOA PHÒNG -->
+      ${detailedResults.length > 0 ? `
+        <div style="margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 6px;">
+              <span>📑</span> Chi Tiết Kết Quả Khám Các Chuyên Khoa (${detailedResults.length}/${checks.length})
+            </h4>
+            <span style="font-size: 11px; color: var(--text-muted); font-style: italic;">Bấm vào chip hoặc nút "Sửa" để chuyển nhanh tới phòng khám</span>
+          </div>
+          <div style="overflow-x: auto; background: white; border: 1px solid var(--border); border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+              <thead>
+                <tr style="background: #f8fafc; border-bottom: 2px solid var(--border);">
+                  <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); width: 170px;">Chuyên khoa</th>
+                  <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); width: 160px;">Bác sĩ khám</th>
+                  <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); width: 110px;">Phân loại</th>
+                  <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Kết quả khám chi tiết</th>
+                  <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); width: 70px; text-align: center;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${detailedResults.map((item, idx) => `
+                  <tr style="border-bottom: 1px solid var(--border); background: ${idx % 2 === 0 ? '#ffffff' : '#fcfcfd'};">
+                    <td style="padding: 10px 14px; font-weight: 600; color: var(--text-main); white-space: nowrap;">
+                      ${item.name}
+                    </td>
+                    <td style="padding: 10px 14px; color: var(--text-main);">
+                      ${item.doctor}
+                    </td>
+                    <td style="padding: 10px 14px;">
+                      <span style="display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
+                        ${item.pl}
+                      </span>
+                    </td>
+                    <td style="padding: 10px 14px; color: var(--text-main); line-height: 1.5;">
+                      ${item.content}
+                    </td>
+                    <td style="padding: 10px 14px; text-align: center;">
+                      <button type="button" class="btn btn-secondary btn-sm btn-jump-room" data-room="${item.roomId}" style="padding: 3px 8px; font-size: 11px;" title="Chuyển đến phòng khám này">
+                        ✏️ Sửa
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ` : ''}
     </div>
 
     <!-- FORM KẾT LUẬN -->
@@ -279,6 +533,17 @@ function renderConclusionView(container, patientData) {
       window.showToast('Đã đồng bộ kết quả mới nhất từ các phòng khám', 'success');
     };
   }
+
+  // Gắn sự kiện bấm vào chip hoặc nút "Sửa" để chuyển nhanh tới phòng khám
+  container.querySelectorAll('.prog-chip, .btn-jump-room').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const roomId = el.dataset.room;
+      if (roomId && window.App && window.App.switchRoom) {
+        window.App.switchRoom(roomId);
+      }
+    });
+  });
 
   // Gắn sự kiện mở Modal tra cứu ICD-10
   const btnOpenIcdModal = document.getElementById('btn-open-icd-modal');
