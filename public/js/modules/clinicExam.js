@@ -1,3 +1,56 @@
+const SPECIALTY_DOCTORS = {
+  noi: [
+    'Nguyễn Hoài Nam',
+    'Dương Văn Toàn',
+    'Hoàng Thị Tú Lan',
+    'Diêm Công Minh',
+    'Đoàn Thị Ngọc',
+    'Nông Thị Tuyến'
+  ],
+  ngoai: [
+    'Vũ Chí Cường',
+    'Hà Ngọc Mai'
+  ],
+  mat: [
+    'Nguyễn Thị Bích',
+    'Nguyễn Xuân Thiêm'
+  ],
+  tmh: [
+    'Nguyễn Văn Chính',
+    'Nguyễn Thị Hà'
+  ],
+  rhm: [
+    'Nguyễn Thị Quyên',
+    'Trần Đức Cử',
+    'Trần Văn Quỳnh'
+  ],
+  da_lieu: [
+    'Hoàng Thị Tú Lan',
+    'Nguyễn Hoài Nam',
+    'Nông Thị Tuyết Nhung'
+  ],
+  san: [
+    'Nguyễn Tiến Mạnh',
+    'Nguyễn Thị Trang',
+    'Lê Thị Thúy Nga',
+    'Đào Thị Thu Dung'
+  ]
+};
+
+function renderDoctorSelect(selectId, roomId, currentValue, savedDoctor) {
+  const doctors = SPECIALTY_DOCTORS[roomId] || [];
+  let currentVal = currentValue || savedDoctor || (doctors.length > 0 ? doctors[0] : '');
+  let options = [...doctors];
+  if (currentVal && !options.includes(currentVal)) {
+    options.unshift(currentVal);
+  }
+  return `
+    <select id="${selectId}" class="form-control">
+      ${options.map(doc => `<option value="${doc}" ${doc === currentVal ? 'selected' : ''}>${doc}</option>`).join('')}
+    </select>
+  `;
+}
+
 function renderClinicExamView(container, patientData, currentRoomId) {
   if (!patientData || !patientData.patient) {
     container.innerHTML = `
@@ -149,7 +202,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             </div>
             <div class="form-group">
               <label>Bác sỹ khám</label>
-              <input type="text" id="ex-mat_bac_sy" class="form-control" value="${lamSang.mat_bac_sy || savedDoctor}">
+              ${renderDoctorSelect('ex-mat_bac_sy', 'mat', lamSang.mat_bac_sy, savedDoctor)}
             </div>
           </div>
 
@@ -219,7 +272,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             </div>
             <div class="form-group">
               <label>Bác sỹ khám</label>
-              <input type="text" id="ex-tmh_bac_sy" class="form-control" value="${lamSang.tmh_bac_sy || savedDoctor}">
+              ${renderDoctorSelect('ex-tmh_bac_sy', 'tmh', lamSang.tmh_bac_sy, savedDoctor)}
             </div>
           </div>
 
@@ -270,7 +323,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             </div>
             <div class="form-group">
               <label>Bác sỹ khám</label>
-              <input type="text" id="ex-rhm_bac_sy" class="form-control" value="${lamSang.rhm_bac_sy || savedDoctor}">
+              ${renderDoctorSelect('ex-rhm_bac_sy', 'rhm', lamSang.rhm_bac_sy, savedDoctor)}
             </div>
           </div>
 
@@ -304,7 +357,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             </div>
             <div class="form-group">
               <label>Bác sỹ khám Nội</label>
-              <input type="text" id="ex-noi_bac_sy" class="form-control" value="${lamSang.noi_bac_sy || savedDoctor}">
+              ${renderDoctorSelect('ex-noi_bac_sy', 'noi', lamSang.noi_bac_sy, savedDoctor)}
             </div>
           </div>
 
@@ -480,7 +533,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             </div>
             <div class="form-group">
               <label>Bác sỹ khám</label>
-              <input type="text" id="ex-ngoai_bac_sy" class="form-control" value="${lamSang.ngoai_bac_sy || savedDoctor}">
+              ${renderDoctorSelect('ex-ngoai_bac_sy', 'ngoai', lamSang.ngoai_bac_sy, savedDoctor)}
             </div>
           </div>
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
@@ -519,7 +572,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             </div>
             <div class="form-group">
               <label>Bác sỹ khám</label>
-              <input type="text" id="ex-da_lieu_bac_sy" class="form-control" value="${lamSang.da_lieu_bac_sy || savedDoctor}">
+              ${renderDoctorSelect('ex-da_lieu_bac_sy', 'da_lieu', lamSang.da_lieu_bac_sy, savedDoctor)}
             </div>
           </div>
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
@@ -546,7 +599,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
       formHtml = `
         <div class="card">
           <div class="card-title">
-            <span>🌸 Kết Quả Khám Sản PhỤ Khoa (Nữ)</span>
+            <span>🌸 Kết Quả Khám Sản Phụ Khoa (Nữ)</span>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal">Điền Nhanh: Bình Thường</button>
           </div>
           <form id="form-exam">
@@ -567,7 +620,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
               </div>
               <div class="form-group">
                 <label>Bác sỹ khám</label>
-                <input type="text" id="ex-san_phu_khoa_bac_sy" class="form-control" value="${lamSang.san_phu_khoa_bac_sy || savedDoctor}">
+                ${renderDoctorSelect('ex-san_phu_khoa_bac_sy', 'san', lamSang.san_phu_khoa_bac_sy, savedDoctor)}
               </div>
             </div>
             <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
@@ -587,7 +640,6 @@ function renderClinicExamView(container, patientData, currentRoomId) {
       <div class="card">
         <div class="card-title">
           <span>🧪 Kết Quả Cận Lâm Sàng & Xét Nghiệm Toàn Diện</span>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-normal">Điền Nhanh: Chỉ Số Chuẩn</button>
         </div>
         <form id="form-exam">
           <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--primary-color);">1. Huyết Học & Công Thức Máu</h4>
@@ -759,6 +811,26 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
   container.innerHTML = formHtml;
 
+  // Tự động lưu lựa chọn bác sĩ khi thay đổi dropdown
+  const docSelectIds = {
+    mat: 'ex-mat_bac_sy',
+    tmh: 'ex-tmh_bac_sy',
+    rhm: 'ex-rhm_bac_sy',
+    noi: 'ex-noi_bac_sy',
+    ngoai: 'ex-ngoai_bac_sy',
+    da_lieu: 'ex-da_lieu_bac_sy',
+    san: 'ex-san_phu_khoa_bac_sy'
+  };
+  const currentDocSelectId = docSelectIds[currentRoomId];
+  if (currentDocSelectId) {
+    const el = document.getElementById(currentDocSelectId);
+    if (el) {
+      el.addEventListener('change', () => {
+        window.RoomManager.saveDoctor(currentRoomId, el.value);
+      });
+    }
+  }
+
   // Gắn sự kiện điền nhanh (Normal fill button)
   const btnNormal = document.getElementById('btn-fill-normal');
   if (btnNormal) {
@@ -785,7 +857,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-mat_benh').value = 'Không có';
         document.getElementById('ex-mat_phan_loai').value = '1';
         const bsMat = document.getElementById('ex-mat_bac_sy');
-        if (bsMat && !bsMat.value) bsMat.value = savedDoctor || 'BS. Chuyên khoa Mắt';
+        if (bsMat && !bsMat.value) bsMat.value = savedDoctor || (SPECIALTY_DOCTORS.mat && SPECIALTY_DOCTORS.mat[0]) || '';
       } else if (currentRoomId === 'tmh') {
         document.getElementById('ex-tmh_tai_trai_thuong').value = '5';
         document.getElementById('ex-tmh_tai_trai_tham').value = '0.5';
@@ -794,14 +866,14 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         document.getElementById('ex-tmh_benh').value = 'Bình thường';
         document.getElementById('ex-tmh_phan_loai').value = '1';
         const bsTmh = document.getElementById('ex-tmh_bac_sy');
-        if (bsTmh && !bsTmh.value) bsTmh.value = savedDoctor || 'BS. Chuyên khoa TMH';
+        if (bsTmh && !bsTmh.value) bsTmh.value = savedDoctor || (SPECIALTY_DOCTORS.tmh && SPECIALTY_DOCTORS.tmh[0]) || '';
       } else if (currentRoomId === 'rhm') {
         document.getElementById('ex-rhm_ham_tren').value = 'Bình thường';
         document.getElementById('ex-rhm_ham_duoi').value = 'Bình thường';
         document.getElementById('ex-rhm_benh').value = 'Không có';
         document.getElementById('ex-rhm_phan_loai').value = '1';
         const bsRhm = document.getElementById('ex-rhm_bac_sy');
-        if (bsRhm && !bsRhm.value) bsRhm.value = savedDoctor || 'BS. Chuyên khoa RHM';
+        if (bsRhm && !bsRhm.value) bsRhm.value = savedDoctor || (SPECIALTY_DOCTORS.rhm && SPECIALTY_DOCTORS.rhm[0]) || '';
       } else if (currentRoomId === 'noi') {
         const ngayKhamNoi = document.getElementById('ex-noi_ngay_kham');
         if (ngayKhamNoi && !ngayKhamNoi.value) ngayKhamNoi.value = todayStr;
@@ -830,17 +902,17 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         const plTamThan = document.getElementById('ex-noi_pl_tam_than');
         if (plTamThan) plTamThan.value = '1';
         const bsNoi = document.getElementById('ex-noi_bac_sy');
-        if (bsNoi && !bsNoi.value) bsNoi.value = savedDoctor || 'BS. Chuyên khoa Nội';
+        if (bsNoi && !bsNoi.value) bsNoi.value = savedDoctor || (SPECIALTY_DOCTORS.noi && SPECIALTY_DOCTORS.noi[0]) || '';
       } else if (currentRoomId === 'ngoai') {
         document.getElementById('ex-ngoai_ket_qua').value = 'Bình thường';
         document.getElementById('ex-ngoai_phan_loai').value = '1';
         const bsNgoai = document.getElementById('ex-ngoai_bac_sy');
-        if (bsNgoai && !bsNgoai.value) bsNgoai.value = savedDoctor || 'BS. Chuyên khoa Ngoại';
+        if (bsNgoai && !bsNgoai.value) bsNgoai.value = savedDoctor || (SPECIALTY_DOCTORS.ngoai && SPECIALTY_DOCTORS.ngoai[0]) || '';
       } else if (currentRoomId === 'da_lieu') {
         document.getElementById('ex-da_lieu_ket_qua').value = 'Bình thường';
         document.getElementById('ex-da_lieu_phan_loai').value = '1';
         const bsDaLieu = document.getElementById('ex-da_lieu_bac_sy');
-        if (bsDaLieu && !bsDaLieu.value) bsDaLieu.value = savedDoctor || 'BS. Chuyên khoa Da liễu';
+        if (bsDaLieu && !bsDaLieu.value) bsDaLieu.value = savedDoctor || (SPECIALTY_DOCTORS.da_lieu && SPECIALTY_DOCTORS.da_lieu[0]) || '';
       } else if (currentRoomId === 'san' && p.gioi_tinh === 2) {
         if (document.getElementById('ex-san_phu_khoa_ket_qua')) {
           document.getElementById('ex-san_phu_khoa_ket_qua').value = 'Bình thường';
@@ -849,7 +921,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           document.getElementById('ex-san_phu_khoa_phan_loai').value = '1';
         }
         const bsSan = document.getElementById('ex-san_phu_khoa_bac_sy');
-        if (bsSan && !bsSan.value) bsSan.value = savedDoctor || 'BS. Sản phụ khoa';
+        if (bsSan && !bsSan.value) bsSan.value = savedDoctor || (SPECIALTY_DOCTORS.san && SPECIALTY_DOCTORS.san[0]) || '';
       } else if (currentRoomId === 'cls') {
         // Huyết học
         document.getElementById('ex-cls_hong_cau').value = '4.5';
