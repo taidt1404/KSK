@@ -12,11 +12,9 @@
   <header class="navbar">
     <div class="nav-brand">
       <div class="brand-logo">🏥</div>
-      <div>
-        <div class="brand-title">
-          <span>KSK-LAN</span>
-          <span class="brand-badge">Trực Tuyến</span>
-        </div>
+      <div class="brand-title">
+        <span>KSK-LAN</span>
+        <span class="brand-badge">Trực Tuyến</span>
       </div>
     </div>
 
@@ -24,20 +22,25 @@
       <div id="current-room-badge" class="current-room-tag">
         <span>🏢</span> <span>Tiếp Đón & Hành Chính</span>
       </div>
-      <button class="btn btn-secondary btn-sm" id="btn-switch-room">
-        🔄 Đổi Phòng Khám
+      <button class="btn btn-secondary btn-sm" id="btn-switch-room" title="Đổi phòng khám">
+        🔄 <span class="hide-mobile-text">Đổi Phòng</span>
       </button>
     </div>
 
-    <div class="nav-actions">
-      <div class="form-group" style="margin: 0; min-width: 180px;">
-        <select id="select-dot-kham" class="form-control" style="padding: 5px 10px; font-size: 13px;">
+    <!-- Nút menu thu gọn trên Mobile -->
+    <button class="btn btn-secondary btn-sm btn-nav-more" id="btn-toggle-menu" title="Menu chức năng bổ sung">
+      ⚙️
+    </button>
+
+    <div class="nav-actions" id="nav-actions-menu">
+      <div class="form-group nav-dot-kham-group">
+        <select id="select-dot-kham" class="form-control">
           <option value="">-- Tất cả đợt khám --</option>
         </select>
       </div>
 
       <button class="btn btn-success btn-sm" id="btn-export-excel" title="Xuất toàn bộ kết quả ra file Excel 108 cột">
-        📊 Xuất Excel 108 Cột
+        📊 <span class="hide-mobile-text">Xuất Excel 108 Cột</span>
       </button>
 
       <div class="connection-status">
@@ -47,27 +50,50 @@
     </div>
   </header>
 
+  <!-- MOBILE NAVIGATION TABS (Dành riêng cho màn hình nhỏ <= 768px: iPhone, Android) -->
+  <nav class="mobile-nav-tabs" id="mobile-nav-tabs">
+    <button type="button" class="mobile-tab-btn active" id="btn-mobile-tab-list">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">Danh Sách</span>
+      <span class="tab-count-badge" id="mobile-queue-count">0</span>
+    </button>
+    <button type="button" class="mobile-tab-btn" id="btn-mobile-tab-workspace">
+      <span class="tab-icon">📝</span>
+      <span class="tab-label" id="mobile-tab-patient-title">Khám Bệnh</span>
+    </button>
+  </nav>
+
   <!-- APP CONTAINER -->
-  <main class="app-container">
+  <main class="app-container" id="app-container">
     <!-- SIDEBAR: PATIENT QUEUE -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="app-sidebar">
       <div class="sidebar-header">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="search-patient-input" class="search-input" placeholder="Tìm theo CCCD, Tên hoặc STT...">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div class="search-box" style="margin-bottom: 0; flex: 1;">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-patient-input" class="search-input" placeholder="Tìm theo CCCD, Tên hoặc STT...">
+          </div>
+          <!-- Nút thu gọn Sidebar trên iPad / PC -->
+          <button type="button" class="btn-sidebar-collapse" id="btn-toggle-sidebar" title="Thu gọn / Mở rộng danh sách">
+            ◀
+          </button>
         </div>
+
         <!-- BỘ LỌC THEO NGÀY & ĐẾM LƯỢT KHÁM -->
         <div class="date-filter-box" style="margin-top: 8px;">
-          <div style="display: flex; gap: 4px; align-items: center;">
-            <input type="date" id="filter-date-input" class="form-control" style="font-size: 11.5px; padding: 4px 6px; height: 30px; flex: 1;" title="Chọn ngày xem số lượt khám">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-date-today" style="padding: 4px 6px; font-size: 11px; white-space: nowrap;">Hôm nay</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-date-yesterday" style="padding: 4px 6px; font-size: 11px; white-space: nowrap;">Hôm qua</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-date-all" style="padding: 4px 6px; font-size: 11px; white-space: nowrap;" title="Tất cả các ngày">Tất cả</button>
+          <div class="date-filter-inputs">
+            <input type="date" id="filter-date-input" class="form-control" title="Chọn ngày xem số lượt khám">
+            <div class="date-quick-btns">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-date-today">Hôm nay</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-date-yesterday">Hôm qua</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-date-all" title="Tất cả các ngày">Tất cả</button>
+            </div>
           </div>
           <div id="date-stat-badge" style="font-size: 11.5px; color: #0369a1; font-weight: 600; margin-top: 6px; padding: 4px 8px; background: #f0f9ff; border-radius: 4px; border: 1px solid #bae6fd; display: flex; justify-content: space-between; align-items: center;">
             <span id="date-stat-text">📅 Đang tải lượt khám...</span>
           </div>
         </div>
+
         <div class="filter-tabs" style="margin-top: 8px;">
           <button class="tab-btn active" data-filter="all" id="tab-btn-all">Tất Cả</button>
           <button class="tab-btn" data-filter="waiting" id="tab-btn-waiting">Chờ Khám</button>
@@ -80,23 +106,35 @@
       </div>
     </aside>
 
+    <!-- Nút mở rộng Sidebar khi đang thu gọn (iPad/PC) -->
+    <button type="button" class="btn-sidebar-expand-floating" id="btn-expand-sidebar-floating" title="Mở danh sách bệnh nhân">
+      ▶ DS
+    </button>
+
     <!-- MAIN WORKSPACE -->
-    <section class="main-workspace">
+    <section class="main-workspace" id="app-workspace">
       <!-- PATIENT HEADER BANNER -->
       <div class="workspace-header">
-        <div class="patient-banner">
-          <div class="banner-avatar">👤</div>
-          <div class="banner-details">
-            <h2 id="banner-patient-name">Vui lòng chọn bệnh nhân</h2>
-            <div id="banner-patient-meta" class="banner-meta"></div>
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+          <!-- Nút quay lại danh sách trên mobile -->
+          <button class="btn btn-secondary btn-sm btn-back-to-list" id="btn-back-to-list" title="Quay lại danh sách bệnh nhân">
+            ⬅ DS
+          </button>
+          <div class="patient-banner">
+            <div class="banner-avatar">👤</div>
+            <div class="banner-details">
+              <h2 id="banner-patient-name">Vui lòng chọn bệnh nhân</h2>
+              <div id="banner-patient-meta" class="banner-meta"></div>
+            </div>
           </div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+
+        <div class="workspace-header-actions">
           <button class="btn btn-secondary btn-sm" id="btn-new-patient-nav">
-            ➕ Tiếp Đón Bệnh Nhân Mới
+            ➕ <span class="hide-mobile-text">Tiếp Đón</span> Mới
           </button>
-          <button class="btn btn-outline-danger btn-sm" id="btn-delete-patient-nav" style="display: none; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Chỉ Quản trị viên có mã PIN mới có thể xóa hồ sơ này">
-            🔒 Xóa Bệnh Nhân
+          <button class="btn btn-outline-danger btn-sm" id="btn-delete-patient-nav" style="display: none; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Chỉ Quản trị viên có mật khẩu mới có thể xóa hồ sơ này">
+            🔒 Xóa
           </button>
         </div>
       </div>

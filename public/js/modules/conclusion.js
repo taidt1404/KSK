@@ -331,7 +331,7 @@ function renderConclusionView(container, patientData) {
             <span style="font-size: 11px; color: var(--text-muted); font-style: italic;">Bấm vào chip hoặc nút "Sửa" để chuyển nhanh tới phòng khám</span>
           </div>
           <div style="overflow-x: auto; background: white; border: 1px solid var(--border); border-radius: 8px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <table style="width: 100%; min-width: 620px; border-collapse: collapse; font-size: 13px; text-align: left;">
               <thead>
                 <tr style="background: #f8fafc; border-bottom: 2px solid var(--border);">
                   <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); width: 170px;">Chuyên khoa</th>

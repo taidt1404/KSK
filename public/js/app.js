@@ -358,6 +358,11 @@ function renderPatientList(doneCount = 0, waitingCount = 0) {
   const listContainer = document.getElementById('patient-list-container');
   if (!listContainer) return;
 
+  const mobileQueueCount = document.getElementById('mobile-queue-count');
+  if (mobileQueueCount) {
+    mobileQueueCount.innerText = currentPatientList.length;
+  }
+
   const currentRoom = window.RoomManager.getCurrentRoom();
 
   if (currentPatientList.length === 0) {
@@ -427,11 +432,35 @@ function renderPatientList(doneCount = 0, waitingCount = 0) {
   });
 }
 
+// Chuyển chế độ xem trên Mobile (Danh sách vs Hồ sơ khám)
+function setMobileView(view) {
+  const container = document.getElementById('app-container');
+  const btnTabList = document.getElementById('btn-mobile-tab-list');
+  const btnTabWorkspace = document.getElementById('btn-mobile-tab-workspace');
+  if (!container) return;
+
+  if (view === 'workspace') {
+    container.classList.add('show-workspace');
+    if (btnTabList) btnTabList.classList.remove('active');
+    if (btnTabWorkspace) btnTabWorkspace.classList.add('active');
+    const ws = document.getElementById('app-workspace');
+    if (ws) ws.scrollTop = 0;
+  } else {
+    container.classList.remove('show-workspace');
+    if (btnTabList) btnTabList.classList.add('active');
+    if (btnTabWorkspace) btnTabWorkspace.classList.remove('active');
+  }
+}
+window.setMobileView = setMobileView;
+
 // Chọn một bệnh nhân và hiển thị form tương ứng
 async function selectPatient(patientId) {
   selectedPatientId = patientId;
   renderPatientList();
   await loadPatientDetail(patientId);
+  if (window.innerWidth <= 768) {
+    setMobileView('workspace');
+  }
 }
 
 // Tải chi tiết bệnh nhân
@@ -454,15 +483,21 @@ function updatePatientBanner(p) {
   const nameEl = document.getElementById('banner-patient-name');
   const metaEl = document.getElementById('banner-patient-meta');
   const btnDelete = document.getElementById('btn-delete-patient-nav');
+  const mobileTabPatientTitle = document.getElementById('mobile-tab-patient-title');
+
   if (!p) {
     if (nameEl) nameEl.innerText = 'Chưa chọn bệnh nhân';
     if (metaEl) metaEl.innerHTML = '';
     if (btnDelete) btnDelete.style.display = 'none';
+    if (mobileTabPatientTitle) mobileTabPatientTitle.innerText = 'Khám Bệnh';
     return;
   }
 
   if (btnDelete) btnDelete.style.display = 'inline-flex';
   if (nameEl) nameEl.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${p.ho_ten}`;
+  if (mobileTabPatientTitle) {
+    mobileTabPatientTitle.innerText = `${p.stt ? '#' + p.stt + ' ' : ''}${p.ho_ten}`;
+  }
   if (metaEl) {
     metaEl.innerHTML = `
       <span>🎂 ${p.ngay_sinh} (${p.gioi_tinh === 1 ? 'Nam' : 'Nữ'})</span>
@@ -689,6 +724,13 @@ function setupEventListeners() {
     btnNewPatient.onclick = () => {
       window.RoomManager.setCurrentRoom('tiep_don');
       clearSelectedPatient();
+      if (window.innerWidth <= 768) {
+        setMobileView('workspace');
+        const mobileTabPatientTitle = document.getElementById('mobile-tab-patient-title');
+        if (mobileTabPatientTitle) {
+          mobileTabPatientTitle.innerText = 'Tiếp Đón Mới';
+        }
+      }
     };
   }
 
@@ -773,6 +815,54 @@ function setupEventListeners() {
         }
       });
     }
+  }
+
+  // -------------------------------------------------------------
+  // Xử lý các tương tác Responsive trên Mobile & Tablet (iPad/iPhone)
+  // -------------------------------------------------------------
+  const btnMobileTabList = document.getElementById('btn-mobile-tab-list');
+  const btnMobileTabWorkspace = document.getElementById('btn-mobile-tab-workspace');
+  const btnBackToList = document.getElementById('btn-back-to-list');
+
+  if (btnMobileTabList) {
+    btnMobileTabList.onclick = () => setMobileView('list');
+  }
+  if (btnMobileTabWorkspace) {
+    btnMobileTabWorkspace.onclick = () => setMobileView('workspace');
+  }
+  if (btnBackToList) {
+    btnBackToList.onclick = () => setMobileView('list');
+  }
+
+  // Nút menu phụ trên Navbar Mobile (Đợt khám, Xuất Excel, Status)
+  const btnToggleMenu = document.getElementById('btn-toggle-menu');
+  const navActionsMenu = document.getElementById('nav-actions-menu');
+  if (btnToggleMenu && navActionsMenu) {
+    btnToggleMenu.onclick = (e) => {
+      e.stopPropagation();
+      navActionsMenu.classList.toggle('mobile-open');
+    };
+    document.addEventListener('click', (e) => {
+      if (!navActionsMenu.contains(e.target) && e.target !== btnToggleMenu) {
+        navActionsMenu.classList.remove('mobile-open');
+      }
+    });
+  }
+
+  // Nút thu gọn / mở rộng Sidebar trên iPad / Tablet / PC
+  const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+  const btnExpandSidebar = document.getElementById('btn-expand-sidebar-floating');
+  const appSidebar = document.getElementById('app-sidebar');
+
+  if (btnToggleSidebar && appSidebar) {
+    btnToggleSidebar.onclick = () => {
+      appSidebar.classList.add('collapsed');
+    };
+  }
+  if (btnExpandSidebar && appSidebar) {
+    btnExpandSidebar.onclick = () => {
+      appSidebar.classList.remove('collapsed');
+    };
   }
 }
 
