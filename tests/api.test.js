@@ -47,7 +47,7 @@ async function testApi() {
     assert.strictEqual(theLucJson.success, true);
     console.log('2. Nhập khám thể lực thành công.');
 
-    // 3. Nhập Khám Mắt & Răng Hàm Mặt
+    // 3. Nhập một phần Khám Lâm Sàng (mắt, răng)
     const lamSangRes = await fetch(`${baseUrl}/api/patients/${pId}/kham-lam-sang`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -66,7 +66,38 @@ async function testApi() {
     assert.strictEqual(lamSangJson.success, true);
     console.log('3. Nhập khám lâm sàng (mắt, răng) thành công.');
 
-    // 4. Nhập Kết Luận
+    // 4. Kiểm tra chặn ký kết luận khi chưa đủ 7 phòng bắt buộc
+    const blockRes = await fetch(`${baseUrl}/api/patients/${pId}/ket-luan`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phan_loai_suc_khoe: 2,
+        mo_ta_benh_tat: 'Sâu răng số 7 hàm dưới',
+        ma_icd10: 'K02',
+        loi_dan_bac_si: 'Đi hàn răng số 7',
+        ngay_ket_luan: '02/10/2026',
+        bac_si_ket_luan: 'Nguyễn Văn Làn',
+        ma_cskcb: '24275'
+      })
+    });
+    const blockJson = await blockRes.json();
+    assert.strictEqual(blockRes.status, 400);
+    assert(blockJson.message.includes('chưa khám đủ 7 phòng bắt buộc'));
+    console.log('4. Kiểm tra chặn ký kết luận khi thiếu phòng bắt buộc thành công!');
+
+    // Hoàn thành nốt các phòng bắt buộc: Nội, Ngoại, TMH, Da Liễu
+    await fetch(`${baseUrl}/api/patients/${pId}/kham-lam-sang`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        noi_bac_sy: 'BS. Nội',
+        ngoai_bac_sy: 'BS. Ngoại',
+        tmh_bac_sy: 'BS. TMH',
+        da_lieu_bac_sy: 'BS. Da Liễu'
+      })
+    });
+
+    // Ký kết luận sau khi đã đủ 7 phòng
     const ketLuanRes = await fetch(`${baseUrl}/api/patients/${pId}/ket-luan`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -82,7 +113,7 @@ async function testApi() {
     });
     const ketLuanJson = await ketLuanRes.json();
     assert.strictEqual(ketLuanJson.success, true);
-    console.log('4. Nhập kết luận KSK thành công.');
+    console.log('5. Nhập kết luận KSK sau khi đủ 7 phòng thành công.');
 
     // 5. Kiểm tra lấy toàn bộ hồ sơ
     const detailRes = await fetch(`${baseUrl}/api/patients/${pId}`);

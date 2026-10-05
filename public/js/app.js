@@ -407,7 +407,7 @@ function renderPatientList(doneCount = 0, waitingCount = 0) {
       <div class="patient-card ${isSelected ? 'selected' : ''}" data-id="${p.id}">
         <div class="stt-badge">${p.stt || '#'}</div>
         <div class="patient-info">
-          <div class="patient-name">${p.ho_ten}</div>
+          <div class="patient-name">${(p.ho_ten || '').toUpperCase()}</div>
           <div class="patient-sub">
             <span>${p.ngay_sinh}</span>
             <span>•</span>
@@ -494,9 +494,9 @@ function updatePatientBanner(p) {
   }
 
   if (btnDelete) btnDelete.style.display = 'inline-flex';
-  if (nameEl) nameEl.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${p.ho_ten}`;
+  if (nameEl) nameEl.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${(p.ho_ten || '').toUpperCase()}`;
   if (mobileTabPatientTitle) {
-    mobileTabPatientTitle.innerText = `${p.stt ? '#' + p.stt + ' ' : ''}${p.ho_ten}`;
+    mobileTabPatientTitle.innerText = `${p.stt ? '#' + p.stt + ' ' : ''}${(p.ho_ten || '').toUpperCase()}`;
   }
   if (metaEl) {
     metaEl.innerHTML = `
@@ -751,7 +751,7 @@ function setupEventListeners() {
       }
       const p = selectedPatientData.patient;
       if (patientInfoText) {
-        patientInfoText.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${p.ho_ten} (${p.ngay_sinh}, ${p.gioi_tinh === 1 ? 'Nam' : 'Nữ'})${p.cccd ? ' - CCCD: ' + p.cccd : ''}`;
+        patientInfoText.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${(p.ho_ten || '').toUpperCase()} (${p.ngay_sinh}, ${p.gioi_tinh === 1 ? 'Nam' : 'Nữ'})${p.cccd ? ' - CCCD: ' + p.cccd : ''}`;
       }
       if (inputAdminPin) inputAdminPin.value = '';
       modalDelete.classList.remove('hidden');

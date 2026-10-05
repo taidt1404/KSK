@@ -12,8 +12,14 @@ async function testExcel() {
   await initSchema();
 
   // Đảm bảo có ít nhất 1 bệnh nhân hoàn chỉnh để xuất
-  const testPatient = await get("SELECT id FROM patients WHERE ho_ten = 'Trần Thị Thu Thảo'");
-  assert(testPatient, 'Phải có bệnh nhân mẫu từ Task 2.');
+  let testPatient = await get("SELECT id FROM patients WHERE ho_ten LIKE '%THẢO%' OR ho_ten LIKE '%Thảo%' LIMIT 1");
+  if (!testPatient) {
+    const res = await run(
+      "INSERT INTO patients (stt, ho_ten, ngay_sinh, gioi_tinh, dot_kham) VALUES (1, 'TRẦN THỊ THU THẢO', '15/05/1995', 2, 'Đoàn Test')"
+    );
+    testPatient = { id: res.lastID };
+  }
+  assert(testPatient, 'Phải có bệnh nhân mẫu để kiểm thử.');
 
   // 1. Kiểm thử Xuất Excel
   console.log('1. Đang xuất file Excel từ cơ sở dữ liệu...');
@@ -73,9 +79,9 @@ async function testExcel() {
 
   const importedPatients = await all('SELECT * FROM patients WHERE dot_kham = ?', [uniqueDotKham]);
   assert.strictEqual(importedPatients.length, 2);
-  assert.strictEqual(importedPatients[0].ho_ten, 'Hoàng Văn Import 1');
+  assert.strictEqual(importedPatients[0].ho_ten, 'HOÀNG VĂN IMPORT 1');
   assert.strictEqual(importedPatients[0].gioi_tinh, 1);
-  assert.strictEqual(importedPatients[1].ho_ten, 'Lê Thị Import 2');
+  assert.strictEqual(importedPatients[1].ho_ten, 'LÊ THỊ IMPORT 2');
   assert.strictEqual(importedPatients[1].gioi_tinh, 2);
 
   console.log('3. Kiểm tra dữ liệu nạp vào SQLite chính xác 100%!');

@@ -145,7 +145,7 @@ router.post('/', async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CHO_KHAM')`,
       [
         nextStt,
-        ho_ten.trim(),
+        ho_ten.trim().toUpperCase(),
         ngay_sinh.trim(),
         Number(gioi_tinh),
         cccd ? cccd.trim() : '',
@@ -218,7 +218,7 @@ router.put('/:id', async (req, res) => {
       WHERE id = ?`,
       [
         stt ? Number(stt) : null,
-        ho_ten.trim(),
+        ho_ten.trim().toUpperCase(),
         ngay_sinh.trim(),
         Number(gioi_tinh),
         cccd ? cccd.trim() : '',

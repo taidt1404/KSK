@@ -285,6 +285,17 @@ function renderConclusionView(container, patientData) {
     }
   }
 
+  const MANDATORY_ROOMS = [
+    { roomId: 'the_luc', name: 'Thể Lực', done: isTheLucDone },
+    { roomId: 'noi', name: 'Khám Nội', done: isNoiDone },
+    { roomId: 'ngoai', name: 'Khám Ngoại', done: isNgoaiDone },
+    { roomId: 'mat', name: 'Khám Mắt', done: isMatDone },
+    { roomId: 'tmh', name: 'Khám TMH', done: isTmhDone },
+    { roomId: 'rhm', name: 'Khám RHM', done: isRhmDone },
+    { roomId: 'da_lieu', name: 'Khám Da Liễu', done: isDaLieuDone }
+  ];
+  const missingMandatory = MANDATORY_ROOMS.filter(r => !r.done);
+  const canConclude = missingMandatory.length === 0;
   const missingRooms = checks.filter((c) => !c.done);
 
   container.innerHTML = `
@@ -311,9 +322,20 @@ function renderConclusionView(container, patientData) {
         `).join('')}
       </div>
 
-      ${missingRooms.length > 0 ? `
+      ${!canConclude ? `
+        <div style="background: #fef2f2; border: 1.5px solid #f87171; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px; line-height: 1;">⛔</span>
+          <div>
+            <strong style="font-size: 13.5px;">CHƯA ĐỦ ĐIỀU KIỆN KÝ & KẾT LUẬN HỒ SƠ:</strong>
+            <div style="margin-top: 3px; line-height: 1.4;">
+              Bệnh nhân bắt buộc phải hoàn thành <strong>7 chuyên khoa cơ bản</strong>. Hiện tại còn thiếu: <strong style="color: #b91c1c; text-decoration: underline;">${missingMandatory.map(m => m.name).join(', ')}</strong>.
+              <br>Hệ thống đang <strong>khóa nút Ký kết luận</strong> cho đến khi bệnh nhân hoàn tất các phòng trên.
+            </div>
+          </div>
+        </div>
+      ` : missingRooms.length > 0 ? `
         <div style="background: var(--warning-light); color: #92400e; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 14px;">
-          ⚠️ <strong>Lưu ý:</strong> Bệnh nhân còn thiếu các phòng sau: <strong>${missingRooms.map((m) => m.name).join(', ')}</strong>.
+          ⚠️ <strong>Lưu ý:</strong> Bệnh nhân đã hoàn thành đủ 7 phòng bắt buộc (Đã đủ điều kiện ký). Còn phòng chưa khám: <strong>${missingRooms.map((m) => m.name).join(', ')}</strong>.
         </div>
       ` : `
         <div style="background: var(--success-light); color: #065f46; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 14px;">
@@ -435,9 +457,14 @@ function renderConclusionView(container, patientData) {
           </div>
         </div>
 
-        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
-          <button type="submit" class="btn btn-primary" id="btn-save-conclusion">
-            💾 Ký & Hoàn Thành Hồ Sơ KSK
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap;">
+          ${!canConclude ? `
+            <span style="font-size: 12.5px; color: #dc2626; font-weight: 600;">
+              🔒 Đang khóa nút ký do thiếu: ${missingMandatory.map(m => m.name).join(', ')}
+            </span>
+          ` : ''}
+          <button type="submit" class="btn ${canConclude ? 'btn-primary' : 'btn-secondary'}" id="btn-save-conclusion" ${!canConclude ? 'disabled style="opacity: 0.6; cursor: not-allowed; background: #94a3b8;"' : ''}>
+            ${canConclude ? '💾 Ký & Hoàn Thành Hồ Sơ KSK' : '🔒 Chưa Thể Ký (Thiếu Phòng Khám Bắt Buộc)'}
           </button>
         </div>
       </form>
@@ -499,6 +526,10 @@ function renderConclusionView(container, patientData) {
   const btnFillNormalKl = document.getElementById('btn-fill-normal-conclusion');
   if (btnFillNormalKl) {
     btnFillNormalKl.onclick = () => {
+      if (!canConclude) {
+        window.showToast('Không thể kết luận! Bệnh nhân chưa khám đủ 7 phòng bắt buộc (' + missingMandatory.map(m => m.name).join(', ') + ')', 'error');
+        return;
+      }
       document.getElementById('kl-phan_loai_suc_khoe').value = '1';
       document.getElementById('kl-ma_icd10').value = 'Z00.0';
       renderIcdTags();
@@ -638,6 +669,10 @@ function renderConclusionView(container, patientData) {
   const form = document.getElementById('form-conclusion');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!canConclude) {
+      window.showToast('Không thể ký kết luận! Bệnh nhân chưa hoàn thành các phòng khám bắt buộc: ' + missingMandatory.map(m => m.name).join(', '), 'error');
+      return;
+    }
     let rawIcd = document.getElementById('kl-ma_icd10').value;
     const codes = [];
     rawIcd.split(/[;,]/).forEach(part => {

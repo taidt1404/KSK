@@ -5,7 +5,7 @@ function renderReceptionView(container, patientData) {
   container.innerHTML = `
     <div class="card">
       <div class="card-title">
-        <span>${isEditing ? `📝 Chỉnh Sửa Thông Tin Hành Chính: <strong>${p.ho_ten}</strong> (Mã: #${p.stt || p.id})` : '🏢 Tiếp Đón & Đăng Ký Hồ Sơ Khám Sức Khỏe Mới'}</span>
+        <span>${isEditing ? `📝 Chỉnh Sửa Thông Tin Hành Chính: <strong>${(p.ho_ten || '').toUpperCase()}</strong> (Mã: #${p.stt || p.id})` : '🏢 Tiếp Đón & Đăng Ký Hồ Sơ Khám Sức Khỏe Mới'}</span>
         <div style="display: flex; gap: 8px;">
           ${isEditing ? `
             <button class="btn btn-secondary btn-sm" id="btn-switch-create-new">
@@ -22,7 +22,7 @@ function renderReceptionView(container, patientData) {
         <div class="form-grid-3">
           <div class="form-group">
             <label>Họ và tên <span class="req">*</span></label>
-            <input type="text" id="rec-ho_ten" class="form-control" value="${p.ho_ten || ''}" placeholder="Nhập đầy đủ họ và tên" required autofocus>
+            <input type="text" id="rec-ho_ten" class="form-control" value="${(p.ho_ten || '').toUpperCase()}" placeholder="Nhập đầy đủ họ và tên" style="text-transform: uppercase;" required autofocus>
           </div>
           <div class="form-group">
             <label>Ngày sinh (DD/MM/YYYY) <span class="req">*</span></label>
@@ -106,13 +106,13 @@ function renderReceptionView(container, patientData) {
 
         <div class="form-grid-3" style="margin-top: 14px;">
           <div class="form-group">
-            <label>Tỉnh/Thành phố nơi ở</label>
-            <input type="text" id="rec-tinh_tp" class="form-control" list="list-tinh_tp" value="${p.tinh_tp || ''}" placeholder="Chọn hoặc gõ Tỉnh/TP...">
+            <label>Tỉnh/Thành phố nơi ở <span class="req">*</span></label>
+            <input type="text" id="rec-tinh_tp" class="form-control" list="list-tinh_tp" value="${p.tinh_tp || ''}" placeholder="Chọn hoặc gõ Tỉnh/TP..." required>
             <datalist id="list-tinh_tp"></datalist>
           </div>
           <div class="form-group">
-            <label>Xã/Phường nơi ở</label>
-            <input type="text" id="rec-xa_phuong" class="form-control" list="list-xa_phuong" value="${p.xa_phuong || ''}" placeholder="Chọn hoặc gõ Xã/Phường...">
+            <label>Xã/Phường nơi ở <span class="req">*</span></label>
+            <input type="text" id="rec-xa_phuong" class="form-control" list="list-xa_phuong" value="${p.xa_phuong || ''}" placeholder="Chọn hoặc gõ Xã/Phường..." required>
             <datalist id="list-xa_phuong"></datalist>
           </div>
           <div class="form-group">
@@ -200,12 +200,25 @@ function renderReceptionView(container, patientData) {
     };
   }
 
+  // Tự động in hoa khi nhập Họ và tên
+  const hoTenInput = document.getElementById('rec-ho_ten');
+  if (hoTenInput) {
+    hoTenInput.addEventListener('input', () => {
+      const start = hoTenInput.selectionStart;
+      const end = hoTenInput.selectionEnd;
+      hoTenInput.value = hoTenInput.value.toUpperCase();
+      if (start !== null && end !== null) {
+        hoTenInput.setSelectionRange(start, end);
+      }
+    });
+  }
+
   // Gắn sự kiện submit form (Thêm mới HOẶC Cập nhật)
   const form = document.getElementById('form-reception');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const payload = {
-      ho_ten: document.getElementById('rec-ho_ten').value,
+      ho_ten: (document.getElementById('rec-ho_ten').value || '').trim().toUpperCase(),
       ngay_sinh: document.getElementById('rec-ngay_sinh').value,
       gioi_tinh: document.getElementById('rec-gioi_tinh').value,
       cccd: document.getElementById('rec-cccd').value,
@@ -221,6 +234,18 @@ function renderReceptionView(container, patientData) {
       dot_kham: document.getElementById('rec-dot_kham').value || 'Đoàn KSK ' + new Date().toLocaleDateString('vi-VN'),
       stt: document.getElementById('rec-stt').value || null
     };
+
+    if (!payload.tinh_tp || !payload.tinh_tp.trim()) {
+      window.showToast('Vui lòng chọn hoặc nhập Tỉnh/Thành phố nơi ở.', 'error');
+      document.getElementById('rec-tinh_tp').focus();
+      return;
+    }
+
+    if (!payload.xa_phuong || !payload.xa_phuong.trim()) {
+      window.showToast('Vui lòng chọn hoặc nhập Xã/Phường nơi ở.', 'error');
+      document.getElementById('rec-xa_phuong').focus();
+      return;
+    }
 
     try {
       const url = isEditing ? `/api/patients/${p.id}` : '/api/patients';

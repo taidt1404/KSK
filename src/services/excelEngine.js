@@ -373,7 +373,7 @@ async function importCompanyExcel(filePath, dotKhamDefault = 'Đoàn KSK') {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CHO_KHAM')`,
       [
         sttVal || (imported + 1),
-        hoTenVal.trim(),
+        hoTenVal.trim().toUpperCase(),
         ngaySinhVal ? ngaySinhVal.trim() : '01/01/1990',
         gioiTinhVal,
         cccdVal,

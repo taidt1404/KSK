@@ -170,8 +170,37 @@ router.put('/:id/ket-luan', async (req, res) => {
       loi_dan_bac_si,
       ngay_ket_luan,
       bac_si_ket_luan,
-      ma_cskcb
+      ma_cskcb,
+      force
     } = req.body;
+
+    // Kiểm tra bắt buộc hoàn thành 7 chuyên khoa cơ bản
+    const theLuc = await get('SELECT can_nang, chieu_cao, ha_tam_thu FROM the_luc WHERE patient_id = ?', [patientId]);
+    const isTheLucDone = !!(theLuc && (theLuc.can_nang || theLuc.chieu_cao || theLuc.ha_tam_thu));
+
+    const ls = await get('SELECT * FROM kham_lam_sang WHERE patient_id = ?', [patientId]);
+    const isNoiDone = !!(ls && (ls.noi_bac_sy || ls.noi_pl_tuan_hoan || ls.noi_tuan_hoan || ls.noi_ngay_kham));
+    const isNgoaiDone = !!(ls && (ls.ngoai_phan_loai || ls.ngoai_ket_qua || ls.ngoai_bac_sy));
+    const isMatDone = !!(ls && (ls.mat_phan_loai || ls.mat_khong_kinh_phai || ls.mat_benh || ls.mat_bac_sy));
+    const isTmhDone = !!(ls && (ls.tmh_phan_loai || ls.tmh_benh || ls.tmh_tai_trai_thuong || ls.tmh_bac_sy));
+    const isRhmDone = !!(ls && (ls.rhm_phan_loai || ls.rhm_benh || ls.rhm_ham_tren || ls.rhm_bac_sy));
+    const isDaLieuDone = !!(ls && (ls.da_lieu_phan_loai || ls.da_lieu_ket_qua || ls.da_lieu_bac_sy));
+
+    const missingRooms = [];
+    if (!isTheLucDone) missingRooms.push('Thể Lực');
+    if (!isNoiDone) missingRooms.push('Khám Nội');
+    if (!isNgoaiDone) missingRooms.push('Khám Ngoại');
+    if (!isMatDone) missingRooms.push('Khám Mắt');
+    if (!isTmhDone) missingRooms.push('Khám TMH');
+    if (!isRhmDone) missingRooms.push('Khám RHM');
+    if (!isDaLieuDone) missingRooms.push('Khám Da Liễu');
+
+    if (missingRooms.length > 0 && !force) {
+      return res.status(400).json({
+        success: false,
+        message: `Bệnh nhân chưa khám đủ 7 phòng bắt buộc: ${missingRooms.join(', ')}. Chưa thể ký và kết luận hồ sơ.`
+      });
+    }
 
     await run(
       `INSERT INTO ket_luan (

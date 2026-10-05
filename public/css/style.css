@@ -1096,3 +1096,9 @@ textarea.form-control {
   to { opacity: 1; transform: translateY(0); }
 }
 
+#rec-ho_ten {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+

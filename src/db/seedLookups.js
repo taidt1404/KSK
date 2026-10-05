@@ -5,9 +5,11 @@ const { run, all } = require('./database');
 
 const TEMPLATE_FILE = 'D:\\WorkSpace\\HC\\temp\\Danh sách khám định kỳ.xlsx';
 
-// Danh sách đầy đủ 63 Tỉnh/Thành phố Việt Nam
+const { migrateBacNinh } = require('./migrateBacNinh');
+
+// Danh sách đầy đủ các Tỉnh/Thành phố Việt Nam
 const VIETNAM_63_PROVINCES = [
-  'Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Hải Phòng', 'Thành phố Đà Nẵng', 'Thành phố Cần Thơ', 'Thành phố Huế',
+  'Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Hải Phòng', 'Thành phố Đà Nẵng', 'Thành phố Cần Thơ', 'Thành phố Huế', 'Thành phố Bắc Ninh',
   'Tỉnh An Giang', 'Tỉnh Bà Rịa - Vũng Tàu', 'Tỉnh Bắc Giang', 'Tỉnh Bắc Kạn', 'Tỉnh Bạc Liêu', 'Tỉnh Bắc Ninh',
   'Tỉnh Bến Tre', 'Tỉnh Bình Định', 'Tỉnh Bình Dương', 'Tỉnh Bình Phước', 'Tỉnh Bình Thuận', 'Tỉnh Cà Mau',
   'Tỉnh Cao Bằng', 'Tỉnh Đắk Lắk', 'Tỉnh Đắk Nông', 'Tỉnh Điện Biên', 'Tỉnh Đồng Nai', 'Tỉnh Đồng Tháp',
@@ -24,7 +26,8 @@ async function seedLookups(force = false) {
   if (!force) {
     const existing = await all("SELECT COUNT(*) as count FROM lookup_data WHERE category = 'XA_PHUONG' AND parent_code IS NOT NULL");
     if (existing && existing[0] && existing[0].count > 500) {
-      console.log('ℹ️ Dữ liệu địa chỉ phân cấp đã có sẵn, bỏ qua seed.');
+      console.log('ℹ️ Dữ liệu địa chỉ phân cấp đã có sẵn. Đang kiểm tra cập nhật Bắc Ninh & Bệnh nhân...');
+      await migrateBacNinh();
       return;
     }
   }
@@ -227,6 +230,8 @@ async function seedLookups(force = false) {
       });
     });
   });
+
+  await migrateBacNinh();
 
   console.log(`✅ Đã nạp thành công đầy đủ danh mục địa phương và ${icdList.length} mã ICD-10.`);
 }
