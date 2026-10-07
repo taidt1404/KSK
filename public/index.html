@@ -98,6 +98,7 @@
           <button class="tab-btn active" data-filter="all" id="tab-btn-all">Tất Cả</button>
           <button class="tab-btn" data-filter="waiting" id="tab-btn-waiting">Chờ Khám</button>
           <button class="tab-btn" data-filter="done" id="tab-btn-done">Đã Khám</button>
+          <button class="tab-btn" data-filter="trash" id="tab-btn-trash" title="Thùng rác - Bệnh nhân đã xóa" style="color: #b91c1c;">🗑️ Rác (<span id="tab-trash-count">0</span>)</button>
         </div>
       </div>
 
@@ -133,8 +134,14 @@
           <button class="btn btn-secondary btn-sm" id="btn-new-patient-nav">
             ➕ <span class="hide-mobile-text">Tiếp Đón</span> Mới
           </button>
-          <button class="btn btn-outline-danger btn-sm" id="btn-delete-patient-nav" style="display: none; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Chỉ Quản trị viên có mật khẩu mới có thể xóa hồ sơ này">
-            🔒 Xóa
+          <button class="btn btn-outline-danger btn-sm" id="btn-delete-patient-nav" style="display: none; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Chuyển hồ sơ này vào Thùng rác (vẫn lưu trữ an toàn)">
+            🗑️ Xóa Vào Thùng Rác
+          </button>
+          <button class="btn btn-sm" id="btn-restore-patient-nav" style="display: none; background: #16a34a; border: 1px solid #16a34a; color: #fff; font-weight: 600;" title="Khôi phục hồ sơ bệnh nhân từ Thùng rác">
+            🔄 Khôi Phục Hồ Sơ
+          </button>
+          <button class="btn btn-sm" id="btn-permanent-delete-nav" style="display: none; background: #dc2626; border: 1px solid #dc2626; color: #fff; font-weight: 600;" title="Xóa vĩnh viễn khỏi hệ thống không thể phục hồi">
+            💥 Xóa Vĩnh Viễn
           </button>
         </div>
       </div>
@@ -164,19 +171,19 @@
     </div>
   </div>
 
-  <!-- MODAL: XÁC NHẬN XÓA BỆNH NHÂN (QUẢN TRỊ VIÊN) -->
+  <!-- MODAL: XÁC NHẬN XÓA TẠM THỜI VÀO THÙNG RÁC -->
   <div id="modal-delete-patient" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 440px;">
+    <div class="modal-content" style="max-width: 460px;">
       <div class="modal-header">
         <h3 style="color: #dc2626; display: flex; align-items: center; gap: 8px;">
-          <span>🗑️</span> Xác Nhận Xóa Bệnh Nhân
+          <span>🗑️</span> Chuyển Bệnh Nhân Vào Thùng Rác
         </h3>
         <button class="modal-close" id="btn-close-delete-modal">&times;</button>
       </div>
       <div class="modal-body" style="padding: 18px 20px;">
         <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
           <p style="margin: 0; font-size: 13px; color: #991b1b; line-height: 1.5;">
-            ⚠️ <strong>Cảnh báo quan trọng:</strong> Hành động này sẽ xóa hoàn toàn hồ sơ và mọi kết quả khám của bệnh nhân:
+            🛡️ <strong>Chính sách lưu trữ an toàn:</strong> Hồ sơ sẽ được ẩn khỏi danh sách khám và chuyển vào <strong>Thùng rác</strong>. Mọi thông tin khám và kết luận <strong>vẫn được bảo lưu 100%</strong>, bạn có thể <strong>khôi phục lại bất kỳ lúc nào</strong> nếu xóa nhầm!
           </p>
           <p style="margin: 8px 0 0 0; font-size: 14px; font-weight: bold; color: #7f1d1d;" id="delete-modal-patient-info">
             [Tên bệnh nhân]
@@ -184,16 +191,80 @@
         </div>
         <div class="form-group">
           <label style="font-weight: 600; font-size: 13px;">Mật khẩu Quản trị viên <span class="req">*</span></label>
-          <input type="password" id="input-admin-pin" class="form-control" placeholder="Nhập mật khẩu quản trị để xóa..." autocomplete="off">
+          <input type="password" id="input-admin-pin" class="form-control" placeholder="Nhập mật khẩu quản trị để xác nhận..." autocomplete="off">
           <small style="color: var(--text-muted); font-size: 11.5px; margin-top: 6px; display: block;">
-            🔒 Chỉ Quản trị viên có mật khẩu này mới có thể xóa. Các phòng khám và tiếp đón không thể xóa.
+            🔒 Chỉ Quản trị viên có mật khẩu mới có thể thực hiện thao tác này.
           </small>
         </div>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--border);">
         <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-delete">Hủy</button>
         <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-delete" style="background: #dc2626; border-color: #dc2626; color: white; padding: 6px 16px; font-weight: 600;">
-          Xác Nhận Xóa
+          🗑️ Chuyển Vào Thùng Rác
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: KHÔI PHỤC BỆNH NHÂN TỪ THÙNG RÁC -->
+  <div id="modal-restore-patient" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 460px;">
+      <div class="modal-header">
+        <h3 style="color: #16a34a; display: flex; align-items: center; gap: 8px;">
+          <span>🔄</span> Khôi Phục Hồ Sơ Bệnh Nhân
+        </h3>
+        <button class="modal-close" id="btn-close-restore-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 18px 20px;">
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <p style="margin: 0; font-size: 13px; color: #166534; line-height: 1.5;">
+            ✅ Bệnh nhân sẽ được chuyển từ Thùng rác trở lại danh sách khám bệnh hoạt động kèm toàn bộ kết quả khám ban đầu.
+          </p>
+          <p style="margin: 8px 0 0 0; font-size: 14px; font-weight: bold; color: #14532d;" id="restore-modal-patient-info">
+            [Tên bệnh nhân]
+          </p>
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 600; font-size: 13px;">Mật khẩu Quản trị viên <span class="req">*</span></label>
+          <input type="password" id="input-restore-pin" class="form-control" placeholder="Nhập mật khẩu quản trị để khôi phục..." autocomplete="off">
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--border);">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-restore">Hủy</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-restore" style="background: #16a34a; border-color: #16a34a; color: white; padding: 6px 16px; font-weight: 600;">
+          🔄 Khôi Phục Ngay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: XÁC NHẬN XÓA VĨNH VIỄN KHỎI CSDL -->
+  <div id="modal-permanent-delete-patient" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="color: #b91c1c; display: flex; align-items: center; gap: 8px;">
+          <span>💥</span> Xóa Vĩnh Viễn Khỏi Hệ Thống
+        </h3>
+        <button class="modal-close" id="btn-close-perm-delete-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 18px 20px;">
+        <div style="background: #fef2f2; border: 1.5px solid #ef4444; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <p style="margin: 0; font-size: 13px; color: #991b1b; line-height: 1.5;">
+            ⛔ <strong>CẢNH BÁO NGUY CƠ CAO:</strong> Hành động này sẽ <strong>XÓA SẠCH VĨNH VIỄN</strong> hồ sơ bệnh nhân và toàn bộ kết quả khám ở tất cả phòng chuyên khoa khỏi CSDL. <strong>Không thể khôi phục lại sau thao tác này!</strong>
+          </p>
+          <p style="margin: 8px 0 0 0; font-size: 14px; font-weight: bold; color: #7f1d1d;" id="perm-delete-modal-patient-info">
+            [Tên bệnh nhân]
+          </p>
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 600; font-size: 13px;">Mật khẩu Quản trị viên <span class="req">*</span></label>
+          <input type="password" id="input-permanent-pin" class="form-control" placeholder="Nhập mật khẩu quản trị để xóa vĩnh viễn..." autocomplete="off">
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--border);">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-perm-delete">Hủy</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-perm-delete" style="background: #b91c1c; border-color: #b91c1c; color: white; padding: 6px 16px; font-weight: 600;">
+          💥 Xóa Vĩnh Viễn
         </button>
       </div>
     </div>
@@ -203,11 +274,11 @@
   <div id="toast-container"></div>
 
   <!-- SCRIPTS -->
-  <script src="js/roomManager.js?v=2.1"></script>
-  <script src="js/sse.js?v=2.1"></script>
-  <script src="js/modules/reception.js?v=2.1"></script>
-  <script src="js/modules/clinicExam.js?v=2.1"></script>
-  <script src="js/modules/conclusion.js?v=2.1"></script>
-  <script src="js/app.js?v=2.1"></script>
+  <script src="js/roomManager.js?v=2.2"></script>
+  <script src="js/sse.js?v=2.2"></script>
+  <script src="js/modules/reception.js?v=2.2"></script>
+  <script src="js/modules/clinicExam.js?v=2.2"></script>
+  <script src="js/modules/conclusion.js?v=2.2"></script>
+  <script src="js/app.js?v=2.2"></script>
 </body>
 </html>

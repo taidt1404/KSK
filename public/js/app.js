@@ -212,22 +212,38 @@ async function initApp() {
       event.type === 'PATIENTS_BATCH_IMPORTED'
     ) {
       loadPatientList(false);
+      updateTrashCount();
       const incomingId = event.data?.patientId ?? event.data?.id;
       if (selectedPatientId && incomingId && String(incomingId) === String(selectedPatientId)) {
         loadPatientDetail(selectedPatientId);
       }
     } else if (event.type === 'PATIENT_DELETED') {
       loadPatientList(false);
+      updateTrashCount();
       const incomingId = event.data?.patientId ?? event.data?.id;
       if (selectedPatientId && incomingId && String(incomingId) === String(selectedPatientId)) {
-        clearSelectedPatient();
-        window.showToast('Hồ sơ bệnh nhân này vừa được Quản trị viên xóa.', 'info');
+        if (event.data?.permanent) {
+          clearSelectedPatient();
+          window.showToast('Hồ sơ bệnh nhân này vừa bị xóa vĩnh viễn khỏi hệ thống.', 'info');
+        } else {
+          loadPatientDetail(selectedPatientId);
+          window.showToast('Hồ sơ bệnh nhân này vừa được chuyển vào Thùng rác.', 'info');
+        }
+      }
+    } else if (event.type === 'PATIENT_RESTORED') {
+      loadPatientList(false);
+      updateTrashCount();
+      const incomingId = event.data?.patientId ?? event.data?.id;
+      if (selectedPatientId && incomingId && String(incomingId) === String(selectedPatientId)) {
+        loadPatientDetail(selectedPatientId);
+        window.showToast('Hồ sơ bệnh nhân này vừa được khôi phục thành công!', 'success');
       }
     }
   });
 
-  // Tải danh sách đợt khám
+  // Tải danh sách đợt khám & số lượng thùng rác
   await loadDotKhamList();
+  updateTrashCount();
 
   // Tải danh sách bệnh nhân
   await loadPatientList(true);
@@ -263,10 +279,27 @@ async function loadDotKhamList() {
 
 let lastFetchedAllPatients = [];
 
+// Cập nhật số lượng hồ sơ trong thùng rác
+async function updateTrashCount() {
+  try {
+    const res = await fetch('/api/patients/trash-count');
+    const data = await res.json();
+    if (data.success) {
+      const el = document.getElementById('tab-trash-count');
+      if (el) el.innerText = data.count || 0;
+    }
+  } catch (err) {
+    console.error('Lỗi tải số lượng thùng rác:', err);
+  }
+}
+
 // Tải danh sách bệnh nhân bên sidebar
 async function loadPatientList(autoSelectFirst = false) {
+  updateTrashCount();
   const currentRoom = window.RoomManager.getCurrentRoom();
-  let url = `/api/patients?room=${currentRoom}`;
+  const isTrashTab = currentFilter === 'trash';
+
+  let url = isTrashTab ? '/api/patients?trash=true' : `/api/patients?room=${currentRoom}`;
   if (currentSearchQuery) {
     url += `&q=${encodeURIComponent(currentSearchQuery)}`;
   }
@@ -281,6 +314,19 @@ async function loadPatientList(autoSelectFirst = false) {
     const res = await fetch(url);
     const data = await res.json();
     if (data.success) {
+      if (isTrashTab) {
+        currentPatientList = data.data;
+        renderPatientList();
+        const badgeEl = document.getElementById('date-stat-text');
+        if (badgeEl) {
+          badgeEl.innerHTML = `<span style="color: #b91c1c;">🗑️ <strong>Thùng rác:</strong> ${data.data.length} hồ sơ đã xóa (bấm để xem & khôi phục)</span>`;
+        }
+        if (autoSelectFirst && currentPatientList.length > 0 && !selectedPatientId) {
+          selectPatient(currentPatientList[0].id);
+        }
+        return;
+      }
+
       lastFetchedAllPatients = data.data;
 
       // Tính toán số lượng từng tab
@@ -402,12 +448,13 @@ function renderPatientList(doneCount = 0, waitingCount = 0) {
     else if (currentRoom === 'ket_luan') isDone = p.da_ket_luan;
 
     const isSelected = p.id === selectedPatientId;
+    const isDeleted = !!p.is_deleted;
 
     return `
-      <div class="patient-card ${isSelected ? 'selected' : ''}" data-id="${p.id}">
-        <div class="stt-badge">${p.stt || '#'}</div>
+      <div class="patient-card ${isSelected ? 'selected' : ''}" data-id="${p.id}" style="${isDeleted ? 'opacity: 0.85; border-color: #fca5a5;' : ''}">
+        <div class="stt-badge" style="${isDeleted ? 'background: #ef4444; color: white;' : ''}">${p.stt || '#'}</div>
         <div class="patient-info">
-          <div class="patient-name">${(p.ho_ten || '').toUpperCase()}</div>
+          <div class="patient-name">${(p.ho_ten || '').toUpperCase()}${isDeleted ? ' <span style="color:#b91c1c; font-size:11px;">(ĐÃ XÓA)</span>' : ''}</div>
           <div class="patient-sub">
             <span>${p.ngay_sinh}</span>
             <span>•</span>
@@ -415,11 +462,15 @@ function renderPatientList(doneCount = 0, waitingCount = 0) {
             ${p.cccd ? `<span>• CCCD: ${p.cccd}</span>` : ''}
           </div>
         </div>
-        ${currentRoom !== 'tiep_don' ? `
+        ${isDeleted ? `
+          <div class="patient-status-badge" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 11px;">
+            🗑️ Đã xóa
+          </div>
+        ` : (currentRoom !== 'tiep_don' ? `
           <div class="patient-status-badge ${isDone ? 'badge-done' : 'badge-waiting'}">
             ${isDone ? 'Đã khám' : 'Chờ khám'}
           </div>
-        ` : ''}
+        ` : '')}
       </div>
     `;
   }).join('');
@@ -483,18 +534,35 @@ function updatePatientBanner(p) {
   const nameEl = document.getElementById('banner-patient-name');
   const metaEl = document.getElementById('banner-patient-meta');
   const btnDelete = document.getElementById('btn-delete-patient-nav');
+  const btnRestore = document.getElementById('btn-restore-patient-nav');
+  const btnPermDelete = document.getElementById('btn-permanent-delete-nav');
   const mobileTabPatientTitle = document.getElementById('mobile-tab-patient-title');
 
   if (!p) {
     if (nameEl) nameEl.innerText = 'Chưa chọn bệnh nhân';
     if (metaEl) metaEl.innerHTML = '';
     if (btnDelete) btnDelete.style.display = 'none';
+    if (btnRestore) btnRestore.style.display = 'none';
+    if (btnPermDelete) btnPermDelete.style.display = 'none';
     if (mobileTabPatientTitle) mobileTabPatientTitle.innerText = 'Khám Bệnh';
     return;
   }
 
-  if (btnDelete) btnDelete.style.display = 'inline-flex';
-  if (nameEl) nameEl.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${(p.ho_ten || '').toUpperCase()}`;
+  const isDeleted = !!p.is_deleted;
+
+  if (isDeleted) {
+    if (btnDelete) btnDelete.style.display = 'none';
+    if (btnRestore) btnRestore.style.display = 'inline-flex';
+    if (btnPermDelete) btnPermDelete.style.display = 'inline-flex';
+  } else {
+    if (btnDelete) btnDelete.style.display = 'inline-flex';
+    if (btnRestore) btnRestore.style.display = 'none';
+    if (btnPermDelete) btnPermDelete.style.display = 'none';
+  }
+
+  if (nameEl) {
+    nameEl.innerHTML = `${p.stt ? '#' + p.stt + ' - ' : ''}${(p.ho_ten || '').toUpperCase()}${isDeleted ? ' <span style="background: #fee2e2; color: #b91c1c; font-size: 12px; padding: 2px 8px; border-radius: 4px; vertical-align: middle;">⚠️ ĐANG TRONG THÙNG RÁC</span>' : ''}`;
+  }
   if (mobileTabPatientTitle) {
     mobileTabPatientTitle.innerText = `${p.stt ? '#' + p.stt + ' ' : ''}${(p.ho_ten || '').toUpperCase()}`;
   }
@@ -505,6 +573,7 @@ function updatePatientBanner(p) {
       ${p.sdt ? `<span>📞 ${p.sdt}</span>` : ''}
       ${p.noi_cong_tac ? `<span>🏢 ${p.noi_cong_tac}</span>` : ''}
       ${p.dot_kham ? `<span>📂 ${p.dot_kham}</span>` : ''}
+      ${isDeleted && p.deleted_at ? `<span style="color: #b91c1c; font-weight: 600;">🗑️ Đã xóa: ${p.deleted_at}</span>` : ''}
     `;
   }
 }
@@ -734,7 +803,10 @@ function setupEventListeners() {
     };
   }
 
-  // Xử lý Xóa bệnh nhân (Chỉ Quản trị viên có mã PIN)
+  // -------------------------------------------------------------
+  // Xử lý Xóa vào Thùng rác, Khôi phục & Xóa vĩnh viễn (Admin PIN)
+  // -------------------------------------------------------------
+  // 1. Xóa tạm thời vào Thùng rác
   const btnDeletePatient = document.getElementById('btn-delete-patient-nav');
   const modalDelete = document.getElementById('modal-delete-patient');
   const btnCloseDeleteModal = document.getElementById('btn-close-delete-modal');
@@ -778,7 +850,7 @@ function setupEventListeners() {
       if (!selectedPatientId) return;
 
       btnConfirmDelete.disabled = true;
-      btnConfirmDelete.innerText = 'Đang xóa...';
+      btnConfirmDelete.innerText = 'Đang chuyển...';
 
       try {
         const res = await fetch(`/api/patients/${selectedPatientId}`, {
@@ -791,10 +863,11 @@ function setupEventListeners() {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          window.showToast('Đã xóa hồ sơ bệnh nhân thành công!', 'success');
+          window.showToast(data.message || 'Đã chuyển vào Thùng rác thành công!', 'success');
           closeDeleteModal();
           clearSelectedPatient();
           await loadPatientList(false);
+          updateTrashCount();
         } else {
           window.showToast(data.message || 'Mật khẩu quản trị không chính xác!', 'error');
           inputAdminPin?.focus();
@@ -803,7 +876,7 @@ function setupEventListeners() {
         window.showToast('Lỗi kết nối khi xóa: ' + err.message, 'error');
       } finally {
         btnConfirmDelete.disabled = false;
-        btnConfirmDelete.innerText = 'Xác Nhận Xóa';
+        btnConfirmDelete.innerText = '🗑️ Chuyển Vào Thùng Rác';
       }
     };
 
@@ -812,6 +885,174 @@ function setupEventListeners() {
         if (e.key === 'Enter') {
           e.preventDefault();
           btnConfirmDelete.click();
+        }
+      });
+    }
+  }
+
+  // 2. Khôi phục bệnh nhân từ Thùng rác
+  const btnRestorePatient = document.getElementById('btn-restore-patient-nav');
+  const modalRestore = document.getElementById('modal-restore-patient');
+  const btnCloseRestoreModal = document.getElementById('btn-close-restore-modal');
+  const btnCancelRestore = document.getElementById('btn-cancel-restore');
+  const btnConfirmRestore = document.getElementById('btn-confirm-restore');
+  const inputRestorePin = document.getElementById('input-restore-pin');
+  const restorePatientInfoText = document.getElementById('restore-modal-patient-info');
+
+  if (btnRestorePatient && modalRestore) {
+    btnRestorePatient.onclick = () => {
+      if (!selectedPatientData || !selectedPatientData.patient) {
+        window.showToast('Vui lòng chọn bệnh nhân cần khôi phục', 'warning');
+        return;
+      }
+      const p = selectedPatientData.patient;
+      if (restorePatientInfoText) {
+        restorePatientInfoText.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${(p.ho_ten || '').toUpperCase()} (${p.ngay_sinh}, ${p.gioi_tinh === 1 ? 'Nam' : 'Nữ'})`;
+      }
+      if (inputRestorePin) inputRestorePin.value = '';
+      modalRestore.classList.remove('hidden');
+      setTimeout(() => inputRestorePin?.focus(), 100);
+    };
+  }
+
+  const closeRestoreModal = () => {
+    if (modalRestore) modalRestore.classList.add('hidden');
+    if (inputRestorePin) inputRestorePin.value = '';
+  };
+
+  if (btnCloseRestoreModal) btnCloseRestoreModal.onclick = closeRestoreModal;
+  if (btnCancelRestore) btnCancelRestore.onclick = closeRestoreModal;
+
+  if (btnConfirmRestore) {
+    btnConfirmRestore.onclick = async () => {
+      const pin = inputRestorePin ? inputRestorePin.value.trim() : '';
+      if (!pin) {
+        window.showToast('Vui lòng nhập mật khẩu Quản trị viên', 'error');
+        inputRestorePin?.focus();
+        return;
+      }
+      if (!selectedPatientId) return;
+
+      btnConfirmRestore.disabled = true;
+      btnConfirmRestore.innerText = 'Đang khôi phục...';
+
+      try {
+        const res = await fetch(`/api/patients/${selectedPatientId}/restore`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': encodeURIComponent(pin)
+          },
+          body: JSON.stringify({ adminPin: pin })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          window.showToast(data.message || 'Đã khôi phục bệnh nhân thành công!', 'success');
+          closeRestoreModal();
+          await loadPatientDetail(selectedPatientId);
+          await loadPatientList(false);
+          updateTrashCount();
+        } else {
+          window.showToast(data.message || 'Mật khẩu quản trị không chính xác!', 'error');
+          inputRestorePin?.focus();
+        }
+      } catch (err) {
+        window.showToast('Lỗi kết nối khi khôi phục: ' + err.message, 'error');
+      } finally {
+        btnConfirmRestore.disabled = false;
+        btnConfirmRestore.innerText = '🔄 Khôi Phục Ngay';
+      }
+    };
+
+    if (inputRestorePin) {
+      inputRestorePin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnConfirmRestore.click();
+        }
+      });
+    }
+  }
+
+  // 3. Xóa vĩnh viễn khỏi CSDL
+  const btnPermDelete = document.getElementById('btn-permanent-delete-nav');
+  const modalPermDelete = document.getElementById('modal-permanent-delete-patient');
+  const btnClosePermDeleteModal = document.getElementById('btn-close-perm-delete-modal');
+  const btnCancelPermDelete = document.getElementById('btn-cancel-perm-delete');
+  const btnConfirmPermDelete = document.getElementById('btn-confirm-perm-delete');
+  const inputPermanentPin = document.getElementById('input-permanent-pin');
+  const permPatientInfoText = document.getElementById('perm-delete-modal-patient-info');
+
+  if (btnPermDelete && modalPermDelete) {
+    btnPermDelete.onclick = () => {
+      if (!selectedPatientData || !selectedPatientData.patient) {
+        window.showToast('Vui lòng chọn bệnh nhân cần xóa vĩnh viễn', 'warning');
+        return;
+      }
+      const p = selectedPatientData.patient;
+      if (permPatientInfoText) {
+        permPatientInfoText.innerText = `${p.stt ? '#' + p.stt + ' - ' : ''}${(p.ho_ten || '').toUpperCase()} (${p.ngay_sinh}, ${p.gioi_tinh === 1 ? 'Nam' : 'Nữ'})${p.cccd ? ' - CCCD: ' + p.cccd : ''}`;
+      }
+      if (inputPermanentPin) inputPermanentPin.value = '';
+      modalPermDelete.classList.remove('hidden');
+      setTimeout(() => inputPermanentPin?.focus(), 100);
+    };
+  }
+
+  const closePermDeleteModal = () => {
+    if (modalPermDelete) modalPermDelete.classList.add('hidden');
+    if (inputPermanentPin) inputPermanentPin.value = '';
+  };
+
+  if (btnClosePermDeleteModal) btnClosePermDeleteModal.onclick = closePermDeleteModal;
+  if (btnCancelPermDelete) btnCancelPermDelete.onclick = closePermDeleteModal;
+
+  if (btnConfirmPermDelete) {
+    btnConfirmPermDelete.onclick = async () => {
+      const pin = inputPermanentPin ? inputPermanentPin.value.trim() : '';
+      if (!pin) {
+        window.showToast('Vui lòng nhập mật khẩu Quản trị viên', 'error');
+        inputPermanentPin?.focus();
+        return;
+      }
+      if (!selectedPatientId) return;
+
+      btnConfirmPermDelete.disabled = true;
+      btnConfirmPermDelete.innerText = 'Đang xóa vĩnh viễn...';
+
+      try {
+        const res = await fetch(`/api/patients/${selectedPatientId}?permanent=true`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': encodeURIComponent(pin)
+          },
+          body: JSON.stringify({ adminPin: pin, permanent: true })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          window.showToast(data.message || 'Đã xóa vĩnh viễn bệnh nhân thành công!', 'success');
+          closePermDeleteModal();
+          clearSelectedPatient();
+          await loadPatientList(false);
+          updateTrashCount();
+        } else {
+          window.showToast(data.message || 'Mật khẩu quản trị không chính xác!', 'error');
+          inputPermanentPin?.focus();
+        }
+      } catch (err) {
+        window.showToast('Lỗi kết nối khi xóa vĩnh viễn: ' + err.message, 'error');
+      } finally {
+        btnConfirmPermDelete.disabled = false;
+        btnConfirmPermDelete.innerText = '💥 Xóa Vĩnh Viễn';
+      }
+    };
+
+    if (inputPermanentPin) {
+      inputPermanentPin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnConfirmPermDelete.click();
         }
       });
     }

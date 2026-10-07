@@ -139,8 +139,8 @@ async function testApi() {
     assert.strictEqual(delFailJson.success, false);
     console.log('6. Kiểm tra chặn mật khẩu sai (403) thành công!');
 
-    // 7. Kiểm tra xóa bệnh nhân với mật khẩu đúng (BVHC@123$%^) -> phải thành công 200
-    const delSuccessRes = await fetch(`${baseUrl}/api/patients/${pId}`, {
+    // 7. Kiểm tra Soft Delete với mật khẩu đúng (BVHC@123$%^) -> chuyển vào thùng rác
+    const softDelRes = await fetch(`${baseUrl}/api/patients/${pId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -148,14 +148,54 @@ async function testApi() {
       },
       body: JSON.stringify({ adminPin: 'BVHC@123$%^' })
     });
-    assert.strictEqual(delSuccessRes.status, 200);
-    const delSuccessJson = await delSuccessRes.json();
-    assert.strictEqual(delSuccessJson.success, true);
+    assert.strictEqual(softDelRes.status, 200);
+    const softDelJson = await softDelRes.json();
+    assert.strictEqual(softDelJson.success, true);
 
-    // Kiểm tra bệnh nhân đã biến mất hoàn toàn
-    const checkDeletedRes = await fetch(`${baseUrl}/api/patients/${pId}`);
-    assert.strictEqual(checkDeletedRes.status, 404);
-    console.log('7. Xóa thành công bằng mật khẩu BVHC@123$%^ và kiểm tra sạch dữ liệu thành công!');
+    // Kiểm tra bệnh nhân không còn ở danh sách hoạt động
+    const listActiveRes = await fetch(`${baseUrl}/api/patients`);
+    const listActiveJson = await listActiveRes.json();
+    assert.strictEqual(listActiveJson.data.some((p) => p.id === pId), false);
+
+    // Kiểm tra bệnh nhân xuất hiện trong Thùng rác
+    const listTrashRes = await fetch(`${baseUrl}/api/patients?trash=true`);
+    const listTrashJson = await listTrashRes.json();
+    assert.strictEqual(listTrashJson.data.some((p) => p.id === pId), true);
+    console.log('7. Xóa tạm thời (Soft Delete) vào Thùng rác thành công!');
+
+    // 8. Kiểm tra Khôi phục (Restore) từ Thùng rác
+    const restoreRes = await fetch(`${baseUrl}/api/patients/${pId}/restore`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-pin': encodeURIComponent('BVHC@123$%^')
+      },
+      body: JSON.stringify({ adminPin: 'BVHC@123$%^' })
+    });
+    assert.strictEqual(restoreRes.status, 200);
+    const restoreJson = await restoreRes.json();
+    assert.strictEqual(restoreJson.success, true);
+
+    // Bệnh nhân quay lại danh sách hoạt động
+    const listRestoredRes = await fetch(`${baseUrl}/api/patients`);
+    const listRestoredJson = await listRestoredRes.json();
+    assert.strictEqual(listRestoredJson.data.some((p) => p.id === pId), true);
+    console.log('8. Khôi phục hồ sơ bệnh nhân từ Thùng rác thành công 100%!');
+
+    // 9. Kiểm tra Xóa vĩnh viễn (Permanent Delete)
+    const permDelRes = await fetch(`${baseUrl}/api/patients/${pId}?permanent=true`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-pin': encodeURIComponent('BVHC@123$%^')
+      },
+      body: JSON.stringify({ adminPin: 'BVHC@123$%^' })
+    });
+    assert.strictEqual(permDelRes.status, 200);
+
+    const checkPermanentlyDeletedRes = await fetch(`${baseUrl}/api/patients/${pId}`);
+    assert.strictEqual(checkPermanentlyDeletedRes.status, 404);
+    console.log('9. Xóa vĩnh viễn (Permanent Delete) hoàn toàn sạch dữ liệu thành công!');
 
     console.log('✅ TEST REST APIs HOÀN TẤT THÀNH CÔNG!');
   } finally {

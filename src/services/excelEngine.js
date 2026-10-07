@@ -72,7 +72,7 @@ async function exportKskExcel({ dot_kham, date } = {}) {
     LEFT JOIN kham_lam_sang k ON p.id = k.patient_id
     LEFT JOIN can_lam_sang c ON p.id = c.patient_id
     LEFT JOIN ket_luan kl ON p.id = kl.patient_id
-    WHERE 1=1
+    WHERE 1=1 AND (p.is_deleted = 0 OR p.is_deleted IS NULL)
   `;
   const params = [];
   if (dot_kham && dot_kham.trim()) {

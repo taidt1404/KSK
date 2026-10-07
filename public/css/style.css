@@ -254,6 +254,9 @@ body {
   font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
+.tab-btn[data-filter="trash"].active {
+  color: #dc2626;
+}
 
 .patient-list {
   flex: 1;

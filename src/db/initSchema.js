@@ -1,4 +1,4 @@
-const { exec } = require('./database');
+const { exec, all } = require('./database');
 
 async function initSchema() {
   const schemaSql = `
@@ -20,6 +20,8 @@ async function initSchema() {
       doi_tuong_ksk TEXT,
       dot_kham TEXT,
       trang_thai TEXT DEFAULT 'CHO_KHAM',
+      is_deleted INTEGER DEFAULT 0,
+      deleted_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -164,6 +166,22 @@ async function initSchema() {
   `;
 
   await exec(schemaSql);
+
+  // Tự động migration bổ sung cột is_deleted và deleted_at nếu database cũ chưa có
+  try {
+    const tableInfo = await all(`PRAGMA table_info(patients)`);
+    const colNames = tableInfo.map((c) => c.name);
+    if (!colNames.includes('is_deleted')) {
+      await exec(`ALTER TABLE patients ADD COLUMN is_deleted INTEGER DEFAULT 0;`);
+    }
+    if (!colNames.includes('deleted_at')) {
+      await exec(`ALTER TABLE patients ADD COLUMN deleted_at DATETIME;`);
+    }
+    await exec(`CREATE INDEX IF NOT EXISTS idx_patients_is_deleted ON patients(is_deleted);`);
+  } catch (mErr) {
+    console.warn('Lưu ý migration cột is_deleted/deleted_at:', mErr.message);
+  }
+
   console.log('✅ SQLite database schema initialized successfully.');
 }
 

@@ -6,7 +6,9 @@ const { broadcast } = require('../services/sseService');
 // Lấy danh sách bệnh nhân kèm trạng thái khám từng phòng
 router.get('/', async (req, res) => {
   try {
-    const { q, dot_kham, room, status, date } = req.query;
+    const { q, dot_kham, room, status, date, trash } = req.query;
+    const isTrash = trash === 'true' || trash === '1';
+
     let sql = `
       SELECT 
         p.*,
@@ -25,7 +27,7 @@ router.get('/', async (req, res) => {
       LEFT JOIN kham_lam_sang k ON p.id = k.patient_id
       LEFT JOIN can_lam_sang c ON p.id = c.patient_id
       LEFT JOIN ket_luan kl ON p.id = kl.patient_id
-      WHERE 1=1
+      WHERE ${isTrash ? 'p.is_deleted = 1' : '(p.is_deleted = 0 OR p.is_deleted IS NULL)'}
     `;
     const params = [];
 
@@ -69,7 +71,11 @@ router.get('/', async (req, res) => {
       params.push(isoDate, vnDate, vnDateNoPad, vnDate, vnDateNoPad, vnDate, vnDateNoPad);
     }
 
-    sql += ` ORDER BY p.id DESC`;
+    if (isTrash) {
+      sql += ` ORDER BY p.deleted_at DESC, p.id DESC`;
+    } else {
+      sql += ` ORDER BY p.id DESC`;
+    }
 
     let rows = await all(sql, params);
 
@@ -113,8 +119,9 @@ async function getNextSttForMonth(targetDate) {
   const maxSttRow = await get(`
     SELECT MAX(stt) as maxStt 
     FROM patients 
-    WHERE strftime('%Y-%m', created_at, 'localtime') = ?
-       OR strftime('%Y-%m', created_at) = ?
+    WHERE (strftime('%Y-%m', created_at, 'localtime') = ?
+       OR strftime('%Y-%m', created_at) = ?)
+      AND (is_deleted = 0 OR is_deleted IS NULL)
   `, [yearMonth, yearMonth]);
 
   return (maxSttRow && maxSttRow.maxStt ? Number(maxSttRow.maxStt) : 0) + 1;
@@ -129,6 +136,17 @@ router.get('/next-stt', async (req, res) => {
     res.json({ success: true, nextStt, month: monthDisplay });
   } catch (err) {
     console.error('Lỗi lấy STT tiếp theo:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// API: Đếm số lượng bệnh nhân đang trong Thùng rác
+router.get('/trash-count', async (req, res) => {
+  try {
+    const row = await get(`SELECT COUNT(*) as count FROM patients WHERE is_deleted = 1`);
+    res.json({ success: true, count: row ? Number(row.count) : 0 });
+  } catch (err) {
+    console.error('Lỗi lấy số lượng thùng rác:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -333,11 +351,59 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    await run('DELETE FROM patients WHERE id = ?', [patientId]);
-    broadcast('PATIENT_DELETED', { id: patientId });
-    res.json({ success: true, message: 'Đã xóa bệnh nhân thành công.' });
+    const isPermanent = req.query.permanent === 'true' || req.body?.permanent === true;
+
+    if (isPermanent) {
+      await run('DELETE FROM patients WHERE id = ?', [patientId]);
+      broadcast('PATIENT_DELETED', { id: patientId, permanent: true });
+      res.json({ success: true, message: 'Đã xóa vĩnh viễn bệnh nhân và toàn bộ dữ liệu khám.' });
+    } else {
+      await run('UPDATE patients SET is_deleted = 1, deleted_at = datetime("now", "localtime") WHERE id = ?', [patientId]);
+      broadcast('PATIENT_DELETED', { id: patientId, permanent: false });
+      res.json({
+        success: true,
+        message: 'Đã chuyển bệnh nhân vào Thùng rác thành công. Mọi kết quả khám vẫn được bảo lưu an toàn và có thể khôi phục bất kỳ lúc nào.'
+      });
+    }
   } catch (err) {
     console.error('Lỗi xóa bệnh nhân:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Khôi phục bệnh nhân từ Thùng rác (Chỉ Quản trị viên có mật khẩu bảo mật)
+router.post('/:id/restore', async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    let providedPin = req.body?.adminPin;
+    if (!providedPin && req.headers['x-admin-pin']) {
+      try {
+        providedPin = decodeURIComponent(req.headers['x-admin-pin']);
+      } catch (e) {
+        providedPin = req.headers['x-admin-pin'];
+      }
+    }
+
+    if (!providedPin || providedPin !== ADMIN_PIN) {
+      return res.status(403).json({
+        success: false,
+        message: 'Mật khẩu Quản trị viên không chính xác. Chỉ Quản trị viên mới có quyền khôi phục bệnh nhân.'
+      });
+    }
+
+    const patient = await get('SELECT id, ho_ten FROM patients WHERE id = ?', [patientId]);
+    if (!patient) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy bệnh nhân.' });
+    }
+
+    await run('UPDATE patients SET is_deleted = 0, deleted_at = NULL WHERE id = ?', [patientId]);
+    broadcast('PATIENT_RESTORED', { id: patientId });
+    res.json({
+      success: true,
+      message: `Đã khôi phục bệnh nhân ${patient.ho_ten} thành công về danh sách khám!`
+    });
+  } catch (err) {
+    console.error('Lỗi khôi phục bệnh nhân:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
