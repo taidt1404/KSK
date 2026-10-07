@@ -4,7 +4,7 @@ const path = require('path');
 const { all, run, get } = require('../db/database');
 const { broadcast } = require('./sseService');
 
-const TEMPLATE_FILE = 'D:\\WorkSpace\\HC\\temp\\Danh sách khám định kỳ.xlsx';
+const { resolveTemplateFile, TEMPLATE_CANDIDATES } = require('../config/templatePath');
 
 const KSK_CODE_TO_NAME = {
   '58': 'KSK: Khám sức khỏe cho đối tượng chính sách',
@@ -43,8 +43,9 @@ function getKskDisplayName(val) {
 }
 
 async function exportKskExcel({ dot_kham, date } = {}) {
+  const TEMPLATE_FILE = resolveTemplateFile();
   if (!fs.existsSync(TEMPLATE_FILE)) {
-    throw new Error(`Không tìm thấy file mẫu tại: ${TEMPLATE_FILE}`);
+    throw new Error(`Không tìm thấy file mẫu. Hãy đặt file vào: ${TEMPLATE_CANDIDATES.filter(p => !p.startsWith('D:\\WorkSpace')).join(' hoặc ')}`);
   }
 
   const workbook = new ExcelJS.Workbook();

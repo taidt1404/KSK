@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { run, all } = require('./database');
 
-const TEMPLATE_FILE = 'D:\\WorkSpace\\HC\\temp\\Danh sách khám định kỳ.xlsx';
+const { resolveTemplateFile } = require('../config/templatePath');
 
 const { migrateBacNinh } = require('./migrateBacNinh');
 
@@ -47,6 +47,7 @@ async function seedLookups(force = false) {
   }
 
   // 2. Đọc file Excel template
+  const TEMPLATE_FILE = resolveTemplateFile();
   if (fs.existsSync(TEMPLATE_FILE)) {
     console.log('2. Đang đọc danh mục địa chỉ và đối tượng từ file Excel template...');
     const workbook = new ExcelJS.Workbook();
