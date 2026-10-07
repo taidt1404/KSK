@@ -133,7 +133,7 @@ function renderReceptionView(container, patientData) {
           </div>
           <div class="form-group">
             <label>Số thứ tự (STT)</label>
-            <input type="number" id="rec-stt" class="form-control" value="${p.stt || ''}" placeholder="Để trống hệ thống tự tăng">
+            <input type="number" id="rec-stt" class="form-control" value="${p.stt || ''}" placeholder="Tự động nối tiếp theo tháng">
           </div>
         </div>
 
@@ -199,6 +199,27 @@ function renderReceptionView(container, patientData) {
       }
     };
   }
+
+  // Tự động tải STT tịnh tiến của tháng hiện tại nếu là tiếp đón người mới
+  function loadSuggestedStt() {
+    if (isEditing) return;
+    const sttInput = document.getElementById('rec-stt');
+    if (!sttInput) return;
+    fetch('/api/patients/next-stt')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.nextStt) {
+          if (!sttInput.value) {
+            sttInput.value = data.nextStt;
+          }
+          sttInput.placeholder = `STT tháng ${data.month}: ${data.nextStt}`;
+          sttInput.title = `Số thứ tự tịnh tiến tháng ${data.month}: ${data.nextStt}`;
+        }
+      })
+      .catch((err) => console.warn('Lỗi lấy STT gợi ý:', err));
+  }
+
+  loadSuggestedStt();
 
   // Tự động in hoa khi nhập Họ và tên
   const hoTenInput = document.getElementById('rec-ho_ten');
@@ -273,6 +294,7 @@ function renderReceptionView(container, patientData) {
         if (!isEditing) {
           form.reset();
           document.getElementById('rec-dot_kham').value = payload.dot_kham;
+          loadSuggestedStt();
           document.getElementById('rec-ho_ten').focus();
         } else {
           if (window.App && window.App.selectPatient) {

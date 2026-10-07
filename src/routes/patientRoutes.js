@@ -105,6 +105,34 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Helper: Lấy STT tiếp theo trong tháng (tịnh tiến từ 1 đến hết tháng, sang tháng mới quay về 1)
+async function getNextSttForMonth(targetDate) {
+  const d = targetDate ? new Date(targetDate) : new Date();
+  const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  
+  const maxSttRow = await get(`
+    SELECT MAX(stt) as maxStt 
+    FROM patients 
+    WHERE strftime('%Y-%m', created_at, 'localtime') = ?
+       OR strftime('%Y-%m', created_at) = ?
+  `, [yearMonth, yearMonth]);
+
+  return (maxSttRow && maxSttRow.maxStt ? Number(maxSttRow.maxStt) : 0) + 1;
+}
+
+// API: Lấy STT tiếp theo gợi ý của tháng hiện tại
+router.get('/next-stt', async (req, res) => {
+  try {
+    const now = new Date();
+    const monthDisplay = `${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+    const nextStt = await getNextSttForMonth(now);
+    res.json({ success: true, nextStt, month: monthDisplay });
+  } catch (err) {
+    console.error('Lỗi lấy STT tiếp theo:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Thêm mới 1 bệnh nhân lẻ tại Tiếp đón
 router.post('/', async (req, res) => {
   try {
@@ -130,11 +158,10 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Họ tên, ngày sinh và giới tính là bắt buộc.' });
     }
 
-    // Tự động tính STT nếu chưa có
-    let nextStt = stt;
+    // Tự động tính STT nếu chưa có (tịnh tiến theo tháng: đầu tháng là 1, tịnh tiến đến hết tháng, sang tháng mới quay về 1)
+    let nextStt = stt ? Number(stt) : null;
     if (!nextStt) {
-      const maxSttRow = await get('SELECT MAX(stt) as maxStt FROM patients WHERE dot_kham = ?', [dot_kham || '']);
-      nextStt = (maxSttRow && maxSttRow.maxStt ? maxSttRow.maxStt : 0) + 1;
+      nextStt = await getNextSttForMonth();
     }
 
     const result = await run(
@@ -198,6 +225,14 @@ router.put('/:id', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Họ tên, ngày sinh và giới tính là bắt buộc.' });
     }
 
+    let updateStt = stt ? Number(stt) : null;
+    if (!updateStt) {
+      const existingPatient = await get('SELECT stt FROM patients WHERE id = ?', [req.params.id]);
+      if (existingPatient) {
+        updateStt = existingPatient.stt;
+      }
+    }
+
     await run(
       `UPDATE patients SET
         stt = ?,
@@ -217,7 +252,7 @@ router.put('/:id', async (req, res) => {
         dot_kham = ?
       WHERE id = ?`,
       [
-        stt ? Number(stt) : null,
+        updateStt,
         ho_ten.trim().toUpperCase(),
         ngay_sinh.trim(),
         Number(gioi_tinh),

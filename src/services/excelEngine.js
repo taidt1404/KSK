@@ -335,6 +335,17 @@ async function importCompanyExcel(filePath, dotKhamDefault = 'Đoàn KSK') {
   let imported = 0;
   let skipped = 0;
 
+  // Lấy STT hiện tại của tháng để tiếp tục tịnh tiến nếu file Excel không có cột STT
+  const now = new Date();
+  const currentYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const maxSttRow = await get(`
+    SELECT MAX(stt) as maxStt 
+    FROM patients 
+    WHERE strftime('%Y-%m', created_at, 'localtime') = ?
+       OR strftime('%Y-%m', created_at) = ?
+  `, [currentYm, currentYm]);
+  let currentMonthlyStt = (maxSttRow && maxSttRow.maxStt ? Number(maxSttRow.maxStt) : 0);
+
   for (let r = headerRowIndex + 1; r <= worksheet.rowCount; r++) {
     const row = worksheet.getRow(r);
     const hoTenVal = colMap.ho_ten ? row.getCell(colMap.ho_ten).text : '';
@@ -373,7 +384,7 @@ async function importCompanyExcel(filePath, dotKhamDefault = 'Đoàn KSK') {
         tinh_tp, xa_phuong, nghe_nghiep, noi_cong_tac, doi_tuong_ksk, dot_kham, trang_thai
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CHO_KHAM')`,
       [
-        sttVal || (imported + 1),
+        sttVal ? Number(sttVal) : (++currentMonthlyStt),
         hoTenVal.trim().toUpperCase(),
         ngaySinhVal ? ngaySinhVal.trim() : '01/01/1990',
         gioiTinhVal,
