@@ -139,7 +139,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Khám Thể Lực & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Khám Thể Lực (Ctrl + S)
             </button>
           </div>
         </form>
@@ -209,7 +209,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Khám Mắt & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Khám Mắt (Ctrl + S)
             </button>
           </div>
         </form>
@@ -279,7 +279,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Khám TMH & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Khám TMH (Ctrl + S)
             </button>
           </div>
         </form>
@@ -330,7 +330,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Khám RHM & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Khám RHM (Ctrl + S)
             </button>
           </div>
         </form>
@@ -500,7 +500,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Khám Nội Khoa & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Khám Nội Khoa (Ctrl + S)
             </button>
           </div>
         </form>
@@ -539,7 +539,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           </div>
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Khám Ngoại & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Khám Ngoại (Ctrl + S)
             </button>
           </div>
         </form>
@@ -578,7 +578,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
           </div>
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Khám Da Liễu & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Khám Da Liễu (Ctrl + S)
             </button>
           </div>
         </form>
@@ -626,7 +626,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
             </div>
             <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
               <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-                💾 Lưu Khám Phụ Khoa & Chuyển Ca Sau (Ctrl + S)
+                💾 Lưu Khám Phụ Khoa (Ctrl + S)
               </button>
             </div>
           </form>
@@ -802,7 +802,7 @@ function renderClinicExamView(container, patientData, currentRoomId) {
 
           <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary" id="btn-submit-exam">
-              💾 Lưu Kết Quả Cận Lâm Sàng & Chuyển Ca Sau (Ctrl + S)
+              💾 Lưu Kết Quả Cận Lâm Sàng (Ctrl + S)
             </button>
           </div>
         </form>
@@ -1114,8 +1114,8 @@ function renderClinicExamView(container, patientData, currentRoomId) {
         if (window.App && window.App.refreshCurrentPatient) {
           await window.App.refreshCurrentPatient();
         }
-        if (window.App && window.App.selectNextPatient) {
-          await window.App.selectNextPatient();
+        if (window.App && window.App.loadPatientList) {
+          await window.App.loadPatientList(false);
         }
       } else {
         window.showToast(data.message || 'Lỗi lưu kết quả', 'error');

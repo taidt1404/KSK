@@ -607,33 +607,9 @@ function clearSelectedPatient() {
   renderWorkspaceContent();
 }
 
-// Tự động chuyển ca tiếp theo sau khi lưu (Chỉ chuyển tới bệnh nhân CHƯA KHÁM phòng này)
+// Cập nhật lại danh sách sau khi lưu (Giữ nguyên bệnh nhân hiện tại, không tự động chuyển ca để người dùng kiểm soát chính xác)
 async function selectNextPatient() {
-  const currentRoom = window.RoomManager.getCurrentRoom();
-  if (currentRoom === 'tiep_don') return;
-
-  // Cập nhật lại danh sách bệnh nhân để lấy trạng thái mới nhất vừa lưu
   await loadPatientList(false);
-
-  const allList = lastFetchedAllPatients.length > 0 ? lastFetchedAllPatients : currentPatientList;
-  if (!allList || allList.length === 0) return;
-
-  const currentIndex = allList.findIndex((p) => p.id === selectedPatientId);
-
-  // 1. Tìm bệnh nhân tiếp theo phía sau người hiện tại mà CHƯA khám phòng này
-  let nextPatient = allList.slice(currentIndex + 1).find((p) => !isPatientDoneForRoom(p, currentRoom));
-
-  // 2. Nếu từ người hiện tại về cuối danh sách không còn ai, tìm vòng lại từ đầu danh sách
-  if (!nextPatient && currentIndex > 0) {
-    nextPatient = allList.slice(0, currentIndex).find((p) => !isPatientDoneForRoom(p, currentRoom));
-  }
-
-  if (nextPatient) {
-    await selectPatient(nextPatient.id);
-  } else {
-    // Không còn bệnh nhân nào đang chờ khám ở phòng này
-    window.showToast('🎉 Đã hoàn thành khám cho tất cả bệnh nhân trong phòng này!', 'info');
-  }
 }
 
 // Thiết lập các sự kiện giao diện

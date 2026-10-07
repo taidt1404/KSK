@@ -711,8 +711,8 @@ function renderConclusionView(container, patientData) {
         if (window.App && window.App.refreshCurrentPatient) {
           await window.App.refreshCurrentPatient();
         }
-        if (window.App && window.App.selectNextPatient) {
-          await window.App.selectNextPatient();
+        if (window.App && window.App.loadPatientList) {
+          await window.App.loadPatientList(false);
         }
       } else {
         window.showToast(data.message || 'Lỗi lưu kết luận', 'error');
