@@ -9,6 +9,8 @@ const { handleSse } = require('./services/sseService');
 const patientRoutes = require('./routes/patientRoutes');
 const examRoutes = require('./routes/examRoutes');
 const lookupRoutes = require('./routes/lookupRoutes');
+const backupRoutes = require('./routes/backupRoutes');
+const { initAutoBackup } = require('./services/backupService');
 let excelRoutes = null;
 try {
   excelRoutes = require('./routes/excelRoutes');
@@ -42,6 +44,7 @@ app.get('/api/events', handleSse);
 app.use('/api/patients', patientRoutes);
 app.use('/api/patients', examRoutes);
 app.use('/api/lookups', lookupRoutes);
+app.use('/api/backups', backupRoutes);
 if (excelRoutes) {
   app.use('/api/excel', excelRoutes);
 }
@@ -73,6 +76,7 @@ function getLanIps() {
 async function startServer(customPort) {
   await initSchema();
   await seedLookups();
+  initAutoBackup();
 
   const listenPort = customPort !== undefined ? customPort : PORT;
 

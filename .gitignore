@@ -4,5 +4,7 @@ data/*.db
 data/*.db-wal
 data/*.db-shm
 uploads/
+backups/*
+!backups/.gitkeep
 tests/output_test.xlsx
 tests/input_import_test.xlsx

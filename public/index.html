@@ -43,6 +43,10 @@
         📊 <span class="hide-mobile-text">Xuất Excel 108 Cột</span>
       </button>
 
+      <button class="btn btn-secondary btn-sm" id="btn-open-backup-modal" title="Quản lý sao lưu tự động & Khôi phục dữ liệu JSON">
+        💾 <span class="hide-mobile-text">Sao Lưu & Dữ Liệu</span>
+      </button>
+
       <div class="connection-status">
         <span id="sse-status-dot" class="status-dot"></span>
         <span id="sse-status-text">Đang kết nối...</span>
@@ -270,15 +274,90 @@
     </div>
   </div>
 
+  <!-- MODAL: SAO LƯU & KHÔI PHỤC DỮ LIỆU (JSON / DB) -->
+  <div id="modal-backup-manager" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <span>💾</span> Quản Lý Sao Lưu & Khôi Phục Dữ Liệu
+        </h3>
+        <button class="modal-close" id="btn-close-backup-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 16px 20px; max-height: 80vh; overflow-y: auto;">
+        
+        <!-- THÔNG TIN SAO LƯU TỰ ĐỘNG HÀNG NGÀY -->
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <h4 style="margin: 0 0 6px 0; color: #166534; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
+            <span>🛡️</span> Tự Động Sao Lưu Hàng Ngày (Auto Daily Backup)
+          </h4>
+          <p style="margin: 0; font-size: 12.5px; color: #15803d; line-height: 1.5;">
+            Hệ thống tự động xuất file <code>backup_YYYY-MM-DD.json</code> và <code>ksk_backup_YYYY-MM-DD.db</code> vào thư mục <code>backups/</code> trên máy chủ mỗi ngày. Đảm bảo toàn bộ kết quả khám của mọi chuyên khoa luôn được bảo vệ an toàn.
+          </p>
+          <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="/api/backups/export-live" class="btn btn-sm btn-primary" id="btn-download-live-backup" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+              📥 Tải File Sao Lưu JSON Hiện Tại (Download)
+            </a>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-trigger-manual-backup">
+              💾 Tạo Bản Sao Lưu Mới Ngay
+            </button>
+          </div>
+        </div>
+
+        <!-- DANH SÁCH CÁC BẢN SAO LƯU TRÊN MÁY CHỦ -->
+        <div style="margin-bottom: 20px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 13px; color: var(--text-main); font-weight: 600;">
+            📂 Các Bản Sao Lưu Có Sẵn Trên Máy Chủ (Thư mục <code>backups/</code>):
+          </h4>
+          <div id="backup-files-list" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; background: #f8fafc; padding: 6px;">
+            <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 12px;">Đang tải danh sách...</div>
+          </div>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">
+
+        <!-- KHÔI PHỤC DỮ LIỆU TỪ FILE JSON -->
+        <div>
+          <h4 style="margin: 0 0 6px 0; color: #b91c1c; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
+            <span>🔄</span> Khôi Phục Dữ Liệu Từ File JSON (Upload / Restore)
+          </h4>
+          <p style="margin: 0 0 12px 0; font-size: 12.5px; color: var(--text-muted); line-height: 1.4;">
+            Chọn file sao lưu <code>.json</code> đã tải về trước đó để nạp lại toàn bộ bệnh nhân và kết quả khám vào CSDL.
+          </p>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label style="font-weight: 600; font-size: 13px;">Chọn file sao lưu JSON <span class="req">*</span></label>
+            <input type="file" id="input-backup-file" class="form-control" accept=".json" style="padding: 6px;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label style="font-weight: 600; font-size: 13px;">Mật khẩu Quản trị viên <span class="req">*</span></label>
+            <input type="password" id="input-backup-pin" class="form-control" placeholder="Nhập mật khẩu quản trị để xác nhận khôi phục..." autocomplete="off">
+            <small style="color: var(--text-muted); font-size: 11.5px; margin-top: 4px; display: block;">
+              🔒 Thao tác này đòi hỏi quyền Quản trị viên để tránh nạp nhầm file.
+            </small>
+          </div>
+
+          <button type="button" class="btn btn-primary btn-sm" id="btn-submit-restore-json" style="background: #0284c7; border-color: #0284c7; color: white; font-weight: 600; padding: 8px 16px;">
+            🔄 Bắt Đầu Khôi Phục Dữ Liệu
+          </button>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; padding: 10px 20px; border-top: 1px solid var(--border);">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-close-backup-manager-footer">Đóng</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
   <!-- SCRIPTS -->
-  <script src="js/roomManager.js?v=2.2"></script>
-  <script src="js/sse.js?v=2.2"></script>
-  <script src="js/modules/reception.js?v=2.2"></script>
-  <script src="js/modules/clinicExam.js?v=2.2"></script>
-  <script src="js/modules/conclusion.js?v=2.2"></script>
-  <script src="js/app.js?v=2.2"></script>
+  <script src="js/roomManager.js?v=2.3"></script>
+  <script src="js/sse.js?v=2.3"></script>
+  <script src="js/modules/reception.js?v=2.3"></script>
+  <script src="js/modules/clinicExam.js?v=2.3"></script>
+  <script src="js/modules/conclusion.js?v=2.3"></script>
+  <script src="js/app.js?v=2.3"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node tests/db.test.js && node tests/api.test.js && node tests/excel.test.js && node tests/stt.test.js"
+    "test": "node tests/db.test.js && node tests/api.test.js && node tests/excel.test.js && node tests/stt.test.js && node tests/backup.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

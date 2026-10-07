@@ -1059,6 +1059,142 @@ function setupEventListeners() {
   }
 
   // -------------------------------------------------------------
+  // Quản lý Sao lưu & Khôi phục dữ liệu JSON (Backup Manager)
+  // -------------------------------------------------------------
+  const btnOpenBackupModal = document.getElementById('btn-open-backup-modal');
+  const modalBackup = document.getElementById('modal-backup-manager');
+  const btnCloseBackupModal = document.getElementById('btn-close-backup-modal');
+  const btnCloseBackupFooter = document.getElementById('btn-close-backup-manager-footer');
+  const btnTriggerManualBackup = document.getElementById('btn-trigger-manual-backup');
+  const btnSubmitRestoreJson = document.getElementById('btn-submit-restore-json');
+  const inputBackupFile = document.getElementById('input-backup-file');
+  const inputBackupPin = document.getElementById('input-backup-pin');
+  const backupFilesListEl = document.getElementById('backup-files-list');
+
+  const loadServerBackupList = async () => {
+    if (!backupFilesListEl) return;
+    try {
+      backupFilesListEl.innerHTML = '<div style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 12px;">Đang tải danh sách bản sao lưu...</div>';
+      const res = await fetch('/api/backups');
+      const data = await res.json();
+      if (data.success && data.data && data.data.length > 0) {
+        backupFilesListEl.innerHTML = data.data.map((b) => `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px;">
+            <div>
+              <strong>${b.filename}</strong>
+              <span style="color: var(--text-muted); margin-left: 8px;">(${b.sizeKb} • ${new Date(b.createdAt).toLocaleDateString('vi-VN')} ${new Date(b.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })})</span>
+            </div>
+            <a href="/api/backups/download/${encodeURIComponent(b.filename)}" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 11px; text-decoration: none;" download>
+              ⬇️ Tải về
+            </a>
+          </div>
+        `).join('');
+      } else {
+        backupFilesListEl.innerHTML = '<div style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 12px;">Chưa có bản sao lưu nào trong thư mục backups/</div>';
+      }
+    } catch (e) {
+      backupFilesListEl.innerHTML = `<div style="text-align: center; padding: 10px; color: #dc2626; font-size: 12px;">Lỗi tải danh sách: ${e.message}</div>`;
+    }
+  };
+
+  const closeBackupModal = () => {
+    if (modalBackup) modalBackup.classList.add('hidden');
+    if (inputBackupFile) inputBackupFile.value = '';
+    if (inputBackupPin) inputBackupPin.value = '';
+  };
+
+  if (btnOpenBackupModal && modalBackup) {
+    btnOpenBackupModal.onclick = () => {
+      modalBackup.classList.remove('hidden');
+      loadServerBackupList();
+    };
+  }
+  if (btnCloseBackupModal) btnCloseBackupModal.onclick = closeBackupModal;
+  if (btnCloseBackupFooter) btnCloseBackupFooter.onclick = closeBackupModal;
+
+  if (btnTriggerManualBackup) {
+    btnTriggerManualBackup.onclick = async () => {
+      const pin = prompt('Nhập mật khẩu Quản trị viên để tạo bản sao lưu mới ngay:');
+      if (!pin) return;
+      btnTriggerManualBackup.disabled = true;
+      btnTriggerManualBackup.innerText = 'Đang sao lưu...';
+      try {
+        const res = await fetch('/api/backups/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': encodeURIComponent(pin)
+          },
+          body: JSON.stringify({ adminPin: pin })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          window.showToast(data.message, 'success');
+          loadServerBackupList();
+        } else {
+          window.showToast(data.message || 'Mật khẩu quản trị không chính xác!', 'error');
+        }
+      } catch (err) {
+        window.showToast('Lỗi tạo sao lưu: ' + err.message, 'error');
+      } finally {
+        btnTriggerManualBackup.disabled = false;
+        btnTriggerManualBackup.innerText = '💾 Tạo Bản Sao Lưu Mới Ngay';
+      }
+    };
+  }
+
+  if (btnSubmitRestoreJson) {
+    btnSubmitRestoreJson.onclick = async () => {
+      const file = inputBackupFile?.files?.[0];
+      if (!file) {
+        window.showToast('Vui lòng chọn file sao lưu (.json) cần khôi phục', 'warning');
+        return;
+      }
+      const pin = inputBackupPin ? inputBackupPin.value.trim() : '';
+      if (!pin) {
+        window.showToast('Vui lòng nhập mật khẩu Quản trị viên', 'error');
+        inputBackupPin?.focus();
+        return;
+      }
+
+      if (!confirm(`Bạn có chắc chắn muốn nạp dữ liệu từ file "${file.name}" vào hệ thống không? Dữ liệu khám sẽ được cập nhật đồng bộ.`)) {
+        return;
+      }
+
+      btnSubmitRestoreJson.disabled = true;
+      btnSubmitRestoreJson.innerText = 'Đang nạp & khôi phục dữ liệu...';
+
+      const formData = new FormData();
+      formData.append('backupFile', file);
+      formData.append('adminPin', pin);
+
+      try {
+        const res = await fetch('/api/backups/restore', {
+          method: 'POST',
+          headers: {
+            'x-admin-pin': encodeURIComponent(pin)
+          },
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          window.showToast(data.message || 'Khôi phục dữ liệu thành công!', 'success');
+          closeBackupModal();
+          await loadPatientList(true);
+        } else {
+          window.showToast(data.message || 'Khôi phục thất bại!', 'error');
+          inputBackupPin?.focus();
+        }
+      } catch (err) {
+        window.showToast('Lỗi gửi file khôi phục: ' + err.message, 'error');
+      } finally {
+        btnSubmitRestoreJson.disabled = false;
+        btnSubmitRestoreJson.innerText = '🔄 Bắt Đầu Khôi Phục Dữ Liệu';
+      }
+    };
+  }
+
+  // -------------------------------------------------------------
   // Xử lý các tương tác Responsive trên Mobile & Tablet (iPad/iPhone)
   // -------------------------------------------------------------
   const btnMobileTabList = document.getElementById('btn-mobile-tab-list');
